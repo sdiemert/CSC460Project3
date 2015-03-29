@@ -12,7 +12,7 @@
 #include <avr/io.h>
 
 #include "sensor_struct.h"
-#include "cops_and_robbers.h"
+#include "game.h"
 
 /*****					Add labels for the packet types to the enumeration					*****/
 
@@ -93,13 +93,14 @@ typedef struct _msg
 typedef union _pf
 {
 	uint8_t _filler[29];	// makes sure the packet is exactly 32 bytes long - this array should not be accessed directly.
-	pf_command_t command;
-	pf_sensors_t sensors;
-	pf_ir_data_t ir_data;
-	pf_ir_command_t ir_command;
-	pf_status_command_t status_command;
-	pf_status_info_t status_info;
-	pf_message_t message;
+	pf_game_t game;
+	// pf_command_t command;
+	// pf_sensors_t sensors;
+	// pf_ir_data_t ir_data;
+	// pf_ir_command_t ir_command;
+	// pf_status_command_t status_command;
+	// pf_status_info_t status_info;
+	// pf_message_t message;
 } payloadformat_t;
 
 /*****						Leave the radiopacket_t structure alone.						*****/
