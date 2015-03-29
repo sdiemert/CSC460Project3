@@ -5,7 +5,7 @@
  *  Author: Daniel
  */
 
-#include "cops_and_robbers.h"
+#include "game.h"
 #include "avr/io.h"
 
 uint8_t ROOMBA_ADDRESSES[4][5] = {

@@ -25,14 +25,14 @@ typedef struct _game_t{
     uint8_t roomba_args[8];
 
     // if not zero send out
-    uint8_t ir_fire
+    uint8_t ir_fire;
 
     //roomba state
-    uint8_t game_player_id // the id of the roomba
+    uint8_t game_player_id; // the id of the roomba
     uint8_t game_team; // 0 for zombie, 1 for human
     uint8_t game_state; // 0 for normal, 1 for stunned
     uint8_t game_hit_flag; // 0 for not hit, 1 for hit
-    uint8_t game_enemy_id // id of the enemy which shot you, only valid when hit_flag is 1
+    uint8_t game_enemy_id; // id of the enemy which shot you, only valid when hit_flag is 1
 } pf_game_t;
 
 
