@@ -7,7 +7,6 @@
 
 #include "game.h"
 #include "avr/io.h"
-#include "roomba/roomba_sci.h"
 
 uint8_t ROOMBA_ADDRESSES[4][5] = {
 	{0xAA,0xAA,0xAA,0xAA,0xAA},
@@ -15,9 +14,9 @@ uint8_t ROOMBA_ADDRESSES[4][5] = {
 	{0xCC,0xCC,0xCC,0xCC,0xCC},
 	{0xDD,0xDD,0xDD,0xDD,0xDD}
 };
+
 uint8_t ROOMBA_FREQUENCIES [4] = {104, 106, 108, 110};
-	
-uint8_t base_station_address[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
 
 // each roomba on a differnent freq
 // base station

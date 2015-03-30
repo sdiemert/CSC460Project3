@@ -16,7 +16,7 @@
 #include "os.h"
 #include "kernel.h"
 #include "error_code.h"
-#include "usart.h"
+//#include "usart.h"
 
 /* Needed for memset */
 /* #include <string.h> */
@@ -938,8 +938,8 @@ void OS_Abort(void)
 
     //char test_arr[] = {'a', 'b', 'c'}; 
 
-    usart_init(9600); 
-    usart_send_bytes(trace, trace_counter); 
+    //usart_init(9600); 
+    //usart_send_bytes(trace, trace_counter); 
 
     for(;;)
     {

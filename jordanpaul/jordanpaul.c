@@ -5,13 +5,15 @@
 #include "roomba/roomba.h"
 #include "roomba/roomba_sci.h"
 #include "roomba/roomba_led_sci.h"
+#include "trace_uart/trace_uart.h"
 #include "uart/uart.h"
 #include "ir/ir.h"
 #include "game.h"
 
 SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
-PLAYERS roomba_num = PLAYER1;
+//PLAYERS roomba_num = PLAYER1;
+uint8_t roomba_num = 1;
 
 void radio_rxhandler(uint8_t pipenumber) {
 	Service_Publish(radio_receive_service,0);
@@ -48,8 +50,12 @@ void SendCommandToRoomba(struct roomba_command* cmd){
 
 void handleRoombaInput(pf_game_t* game)
 {
-	int16_t vx = (game->velocity_x/(255/5) - 2)*200;
-	int16_t vy = (game->velocity_y/(255/5) - 2)*200;
+	int16_t vx = (game->velocity_x/(255/5) - 2)*50;
+	int16_t vy = (game->velocity_y/(255/5) - 2)*50;
+
+	//char code[30];
+	//sprintf(code,"%d %d\n", vx,vy);
+	//trace_uart_putstr(code);
 	Roomba_Drive(vx,vy);
 }
 
@@ -60,7 +66,7 @@ void handleIRInput(pf_game_t* game)
 
 void handleStateInput(pf_game_t* game)
 {
-	
+
 }
 
 
@@ -109,6 +115,8 @@ int r_main(void)
 	_delay_ms(500);
 
 	DDRB |= (1<<PB4);
+
+	//trace_uart_init();
 
 	//Initialize radio.
 	Radio_Init();

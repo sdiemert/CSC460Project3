@@ -5,17 +5,19 @@
  *  Author: Scott and Simon
  */
 
+
 #ifndef GAME_H_
 #define GAME_H_
 
 #include <avr/io.h>
 
-extern uint8_t ROOMBA_ADDRESSES[4][5];
-extern uint8_t ROOMBA_FREQUENCIES[4];
+uint8_t ROOMBA_ADDRESSES[4][5];
+uint8_t ROOMBA_FREQUENCIES[4];
 
-extern uint8_t base_station_address[5];// = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+//uint8_t base_station_address[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
-typedef enum _roomba_nums {ZOMBIE=0, HUMAN=1} TEAM;
+typedef enum _roomba_nums {ZOMBIE=0, HUMAN=1} TEAM; 
+
 typedef enum _zombie_states {NORMAL=0, STUNNED} ZOMBIE_STATES;
 typedef enum _human_states {SHIELDED=0, SHIELDLESS} HUMAN_STATES;
 
