@@ -17,7 +17,7 @@
 
 // non-public constants and macros
 
-#define CHANNEL 104
+#define CHANNEL 112
 #define ADDRESS_LENGTH 5
 
 // Pin definitions for chip select and chip enable on the radio module

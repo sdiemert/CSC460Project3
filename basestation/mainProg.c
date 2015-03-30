@@ -4,10 +4,12 @@
 #include "kernel.h"
 #include "radio.h"
 #include "game.h"
+#include "trace_uart.h"
 #include "joystick.h"
 
 
 radiopacket_t tx_packet; 
+radiopacket_t rx_packet; 
 pf_game_t game_packet;
 
 uint8_t basestation_address[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
@@ -25,7 +27,7 @@ typedef struct{
 roomba_t roombas[4];
 
 void radio_rxhandler(uint8_t val){
-
+    PORTB ^= 1 << 6; 
 }
 
 void sendPacket(uint8_t id, uint8_t x, uint8_t y, uint8_t b){
@@ -34,7 +36,7 @@ void sendPacket(uint8_t id, uint8_t x, uint8_t y, uint8_t b){
 
     game_packet.velocity_x = x;
     game_packet.velocity_y = y;
-    game_packet.button = b;
+    game_packet.button ^= game_packet.button;
     game_packet.game_player_id = id;
     game_packet.game_team = (uint8_t)roombas[id].team;
     game_packet.game_state = (uint8_t)roombas[id].status;
@@ -52,14 +54,18 @@ void updateRoomba(){
     uint8_t joystick_y = 0;    
     uint8_t button = 0;
 
+    char output[20]; 
+
     while(1) {
-        for(current_roomba = 0; current_roomba < 4; current_roomba ++) {
-            //joystick_x = read_analog(roombas[current_roomba].joystick_port);
-            //joystick_y = read_analog(roombas[current_roomba].joystick_port+1);            
+        for(current_roomba = 0; current_roomba < 2; current_roomba++) {
+            Radio_Flush();
+            //Radio_Receive(&rx_packet);
+            joystick_x = read_analog(roombas[current_roomba].joystick_port);
+            joystick_y = read_analog(roombas[current_roomba].joystick_port+1);                      
 
+            //sprintf(output, "%d: (%d,%d)\n\r",current_roomba,joystick_x, joystick_y);
 
-            joystick_x = read_analog(1);
-            joystick_y = read_analog(0);            
+            //trace_uart_putstr(output);
 
             // TODO Button Press
 
@@ -100,6 +106,7 @@ int r_main(){
 
     //set up LED
     DDRB |= 1 << 7; 
+    DDRB |= 1 << 6; 
 
     /* Set up radio */ 
     DDRL |= (1 << PL2); 
@@ -108,8 +115,10 @@ int r_main(){
     PORTL |= (1 << PL2);
     _delay_ms(500); 
     Radio_Init(); 
-    Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[0], ENABLE); 
-    Radio_Configure(RADIO_2MBPS, RADIO_HIGHEST_POWER); 
+    Radio_Configure_Rx(RADIO_PIPE_0, basestation_address, ENABLE); 
+    Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER); 
+
+    trace_uart_init(); 
 
     /*setup joystick controllers*/
     setup_controllers();

@@ -32,7 +32,7 @@ typedef union _u16u
 /// The Roomba sensor data packet structure.  The total size should be 26 bytes.
 typedef struct
 {
-	// packet 1 (environment sensors)
+	// packet 1 (external sensors)
     uint8_t  bumps_wheeldrops;
     uint8_t  wall;
     uint8_t  cliff_left;
@@ -44,13 +44,13 @@ typedef struct
     uint8_t  dirt_left;
     uint8_t  dirt_right;
 
-    // packet 2 (Roomba external state)
+    // packet 2 (chassis sensors)
     uint8_t  remote_opcode;
     uint8_t  buttons;
 	int16_u  distance;
 	int16_u  angle;
 
-	// packet 3 (Roomba internal state)
+	// packet 3 (internal sensors)
     uint8_t  charging_state;
     uint16_u voltage;
     int16_u  current;
