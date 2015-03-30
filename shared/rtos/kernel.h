@@ -1,10 +1,9 @@
 /**
  * @file   kernel.h
  *
- * @brief kernel data structures and constants used in os.cpp
+ * @brief kernel data structures used in os.c.
  *
  * CSC 460/560 Real Time Operating Systems - Mantis Cheng
- * SPRING 2015
  *
  * @author Scott Craig
  * @author Justin Tanner
@@ -19,11 +18,13 @@ extern "C" {
 #include <avr/io.h>
 #include "os.h"
 
-#define WORKSPACE 256
 /** Disable default prescaler to make processor speed 8 MHz. */
 
-#define Disable_Interrupt()    asm volatile ("cli"::)
+#define Disable_Interrupt()     asm volatile ("cli"::)
 #define Enable_Interrupt()     asm volatile ("sei"::)
+
+/** The maximum number of names. Currently the same as the number of tasks. */
+#define 	MAXNAME		MAXPROCESS
 
 /** The RTOS timer's prescaler divisor */
 #define TIMER_PRESCALER 8
@@ -32,10 +33,14 @@ extern "C" {
 #define TICK_CYCLES     (((F_CPU / TIMER_PRESCALER) / 1000) * TICK)
 
 /** LEDs for OS_Abort() */
-#define LED_RED_MASK    (uint8_t)(_BV(PH5))
+#define LED_RED_MASK    (uint8_t)(_BV(7) | _BV(7))
 
 /** LEDs for OS_Abort() */
-#define LED_GREEN_MASK    (uint8_t)(_BV(PH6))
+#define LED_GREEN_MASK    (uint8_t)(_BV(7) | _BV(7))
+
+#define ATMEL_LED_MASK (uint8_t)1 << 7; 
+
+#define WORKSPACE MAXSTACK
 
 
 /* Typedefs and data structures. */
@@ -47,10 +52,10 @@ typedef void (*voidfuncvoid_ptr) (void);      /* pointer to void f(void) */
  */
 typedef enum
 {
-    DEAD = 0,  /*The Task is Dead*/
-    RUNNING,   /*Task is currently running as main task*/
-    READY,     /*Task is ready to execute*/
-    WAITING    /*Task is waiting on a synchronization construct */
+    DEAD = 0,
+    RUNNING,
+    READY,
+    WAITING
 }
 task_state_t;
 
@@ -61,26 +66,14 @@ typedef enum
 {
     NONE = 0,
     TIMER_EXPIRED,
-	
     TASK_CREATE,
     TASK_TERMINATE,
     TASK_NEXT,
     TASK_GET_ARG,
-	
-	SERVICE_INIT,
-	SERVICE_SUB,
-	SERVICE_PUB
+    TASK_INTERRUPT,
 }
 kernel_request_t;
 
-typedef enum
-{
-	SYSTEM = 0,
-	PERIODIC = 1,
-	ROUND_ROBIN = 2,
-	IDLE = -1
-} 
-task_priority_t;
 
 /**
  * @brief The arguments required to create a task.
@@ -90,46 +83,49 @@ typedef struct
     /** The code the new task is to run.*/
     voidfuncvoid_ptr f;
     /** A new task may be created with an argument that it can retrieve later. */
-    int arg; //TODO: Convert to Void*
-    /** Priority of the new task: ROUND_ROBIN, PERIODIC, SYSTEM */
-    task_priority_t priority;
+    int arg;
+    /** Priority of the new task: RR, PERIODIC, SYSTEM */
+    uint8_t level;
+    /** If the new task is PERIODIC, this is its name in the PPP array. */
+    uint8_t name;
+
+    /** New variables required for PERIODIC tasks. */
+    uint16_t                        period;
+    uint16_t                        wcet;
+    uint16_t                        start;
 }
 create_args_t;
 
-typedef struct ptd_metadata_struct periodic_task_metadata_t;
-struct ptd_metadata_struct
-{
-	struct td_struct* task;
-	uint16_t period; //period in 5ms ticks. 
-	uint16_t wcet;   //worst case execution time in ticks. 
-	uint16_t next;   //Next/first time to fire. 
-	struct ptd_metadata_struct* nextT;
-} ;
 
-
+typedef struct td_struct task_descriptor_t;
 /**
  * @brief All the data needed to describe the task, including its context.
  */
-typedef struct td_struct
+struct td_struct
 {
     /** The stack used by the task. SP points in here when task is RUNNING. */
-    uint8_t stack[WORKSPACE];
+    uint8_t                         stack[MAXSTACK];
     /** A variable to save the hardware SP into when the task is suspended. */
-    uint8_t* volatile sp;   /* stack pointer into the "workSpace" */
-	
-	task_priority_t priority;
-	periodic_task_metadata_t* periodic_desc;
-	
+    uint8_t*               volatile sp;   /* stack pointer into the "workSpace" */
+    /** PERIODIC tasks need a name in the PPP array. */
+    uint8_t                         name;
     /** The state of the task in this descriptor. */
-    task_state_t state;
+    task_state_t                    state;
     /** The argument passed to Task_Create for this task. */
-    int arg;
+    int                             arg;
+    /** The priority (type) of this task. */
+    uint8_t                         level;
+    /** A link to the next task descriptor in the queue holding this task. */
+    task_descriptor_t*              next;
+    /** Value to be written to when Service_Publish() is called */
+    int16_t*                         value;
 
-    /* A pointer to where a task expects their data to be published */  
-    int16_t * data;
+    /** New variables required for PERIODIC tasks. */
+    uint16_t                        period;
+    uint16_t                        wcet;
+    int16_t                        time_remaining;
 
-	struct td_struct* next;
-} task_descriptor_t;
+};
 
 
 /**
@@ -137,27 +133,12 @@ typedef struct td_struct
  */
 typedef struct
 {
-	task_descriptor_t* head;
-	task_descriptor_t* tail;
+    /** The first item in the queue. NULL if the queue is empty. */
+    task_descriptor_t*  head;
+    /** The last item in the queue. Undefined if the queue is empty. */
+    task_descriptor_t*  tail;
 }
-task_queue_t;
-
-typedef struct 
-{
-	periodic_task_metadata_t* head;
-	periodic_task_metadata_t* tail;
-}
-periodic_task_queue_t;
-
-/**
- * The basic service struct. Contains a queue_t struct that 
- * holds all tasks subscribed to it.
- */
-struct service
-{
-	task_queue_t task_queue;		
-	task_queue_t data_queue;
-};
+queue_t;
 
 #ifdef __cplusplus
 }
