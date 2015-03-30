@@ -166,7 +166,7 @@ void radio_rxhandler(uint8_t pipenumber) {
 //Handle expected IR values, record unexpected values to pass on via radio.
 //	(Get Roomba state via state packets)
 void ir_rxhandler() {
-	Service_Publish(ir_receive_service,0);
+	//Service_Publish(ir_receive_service,0);
 }
 
 struct roomba_command {
@@ -240,8 +240,8 @@ void send_back_packet()
 
 	PORTB ^= (1<<PB5);
 
-    Radio_Transmit(&packet, RADIO_WAIT_FOR_TX);
-    //Radio_Transmit(&packet, RADIO_RETURN_ON_TX);
+    // Radio_Transmit(&packet, RADIO_WAIT_FOR_TX);
+    Radio_Transmit(&packet, RADIO_RETURN_ON_TX);
 }
 
 
@@ -274,7 +274,7 @@ void rr_roomba_controler() {
         // Radio_Flush();
 
 		//PORTB ^= (1<<PB4);
-		//send_back_packet();
+		send_back_packet();
 	}
 }
 
