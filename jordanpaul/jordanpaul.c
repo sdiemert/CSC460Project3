@@ -1,4 +1,4 @@
-#if 1
+#if 0
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -158,9 +158,9 @@ uint8_t base[5] = {0xff,0xff,0xff,0xff,0xff};
 
 void radio_rxhandler(uint8_t pipenumber) {
 	PORTB ^= ( 1<< PB4);
-	Radio_Flush();
+	// Radio_Flush();
 	//Profile1();
-	//Service_Publish(radio_receive_service,0);
+	Service_Publish(radio_receive_service,0);
 }
 
 //Handle expected IR values, record unexpected values to pass on via radio.
@@ -200,12 +200,12 @@ void handleRoombaInput(pf_game_t* game)
 	if( vx == 0){
 		if( vy > 0){
 			vy = 1;
-		}else{
+		}else if( vy < 0){
 			vy = -1;
 		}
 	}
 
-	//Roomba_Drive(vx,vy);
+	Roomba_Drive(vx,vy);
 }
 
 void handleIRInput(pf_game_t* game)
@@ -240,43 +240,38 @@ void send_back_packet()
 
 	PORTB ^= (1<<PB5);
 
-    //Radio_Transmit(&packet, RADIO_WAIT_FOR_TX);
+    Radio_Transmit(&packet, RADIO_WAIT_FOR_TX);
     //Radio_Transmit(&packet, RADIO_RETURN_ON_TX);
 }
 
 
 void rr_roomba_controler() {
 	//Start the Roomba for the first time.
-	//Roomba_Init();
+	Roomba_Init();
 	int16_t value;
 
 	Radio_Set_Tx_Addr(base);
 
 	for(;;) {
 		Service_Subscribe(radio_receive_service,&value);
-
-		Radio_Flush();
-		PORTB ^= (1<<PB7);
 		//Handle the packets
-		// RADIO_RX_STATUS result;
-		// radiopacket_t packet;
-		// do {
-		// 	result = Radio_Receive(&packet);
-		// 	Radio_Flush();
 
-		// 	//Profile1();
-		// 	//PORTB ^= (1<<PB4);
+		RADIO_RX_STATUS result;
+		radiopacket_t packet;
+		do {
+			result = Radio_Receive(&packet);
 
-		// 	if(result == RADIO_RX_SUCCESS || result == RADIO_RX_MORE_PACKETS) {
-		// 		if( packet.type == GAME)
-		// 		{
-		// 			handleRoombaInput(&packet.payload.game);
-		// 			handleIRInput(&packet.payload.game);
-		// 			handleStateInput(&packet.payload.game);
-		// 		}
-		// 	}
+			if(result == RADIO_RX_SUCCESS || result == RADIO_RX_MORE_PACKETS) {
+				if( packet.type == GAME)
+				{
+					handleRoombaInput(&packet.payload.game);
+					//handleIRInput(&packet.payload.game);
+					//handleStateInput(&packet.payload.game);
+				}
+			}
 
-		// } while (result == RADIO_RX_MORE_PACKETS);
+		} while (result == RADIO_RX_MORE_PACKETS);
+        // Radio_Flush();
 
 		//PORTB ^= (1<<PB4);
 		//send_back_packet();
@@ -309,12 +304,8 @@ int r_main(void)
 	//Initialize radio.
 	Radio_Init();
 	//IR_init();
-	// Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
-	Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[1], ENABLE);
 	// Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[0], ENABLE);
-	// Radio_Configure_Rx(RADIO_PIPE_1, ROOMBA_ADDRESSES[1], ENABLE);
-	// Radio_Configure_Rx(RADIO_PIPE_2, ROOMBA_ADDRESSES[2], ENABLE);
-	// Radio_Configure_Rx(RADIO_PIPE_3, ROOMBA_ADDRESSES[3], ENABLE);
+    Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[1], ENABLE);
 	Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
 
 	radio_receive_service = Service_Init();
