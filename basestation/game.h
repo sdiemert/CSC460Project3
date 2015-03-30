@@ -14,7 +14,7 @@
 uint8_t ROOMBA_ADDRESSES[4][5];
 uint8_t ROOMBA_FREQUENCIES[4];
 
-uint8_t base_station_address[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+//uint8_t base_station_address[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 typedef enum _roomba_nums {ZOMBIE=0, HUMAN=1} TEAM; 
 
