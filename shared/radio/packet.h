@@ -18,15 +18,16 @@
 
 typedef enum _pt
 {
-	COMMAND,				/// a command from the client station to the Roomba
-	SENSOR_DATA,			/// a reply from the Roomba, containing its sensor status data
+	GAME,
+	// COMMAND,				/// a command from the client station to the Roomba
+	// SENSOR_DATA,			/// a reply from the Roomba, containing its sensor status data
 
-	IR_COMMAND,				/// a command to the Roomba's IR transmitter
-	IR_DATA,				/// a signal received from the Roomba's IR receiver
+	// IR_COMMAND,				/// a command to the Roomba's IR transmitter
+	// IR_DATA,				/// a signal received from the Roomba's IR receiver
 
-	REQUEST_ROOMBA_STATUS_UPDATE,	/// request the current Roomba status, can also revive a Roomba.
-	ROOMBA_STATUS_UPDATE,			/// the Roomba's current status
-	MESSAGE					/// a generic message (not implemented by the Roomba)
+	// REQUEST_ROOMBA_STATUS_UPDATE,	/// request the current Roomba status, can also revive a Roomba.
+	// ROOMBA_STATUS_UPDATE,			/// the Roomba's current status
+	// MESSAGE					/// a generic message (not implemented by the Roomba)
 } PACKET_TYPE;
 
 
@@ -39,7 +40,6 @@ typedef enum _pt
 	reply back to a caller. The Roombas will reply to any command with
 	data of the associated type (Roomba -> sensor data, IR -> IR signal) sent
 	back to the calling radio.
-	*/
 typedef struct _cmd
 {
 	uint8_t sender_address[5];	/// The return address of the station sending this packet
@@ -84,6 +84,8 @@ typedef struct _msg
 	uint8_t address[5];
 	uint8_t messagecontent[24];
 } pf_message_t;
+
+*/
 
 /*****							Add format structures to the union							*****/
 

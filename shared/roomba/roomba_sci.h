@@ -103,5 +103,4 @@ typedef enum _cs
 #define ROOMBA_DD_DDR	DDRD
 
 
-
 #endif /* ROOMBA_SCI_H_ */

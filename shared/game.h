@@ -6,26 +6,25 @@
  */
 
 
-#ifndef COPS_AND_ROBBERS_H_
-#define COPS_AND_ROBBERS_H_
+#ifndef _GAME_H_
+#define _GAME_H_
 
 #include "avr/io.h"
 
-typedef enum _roomba_nums {COP1 = 0, COP2, ROBBER1, ROBBER2} COPS_AND_ROBBERS;
+typedef enum _roomba_nums {PLAYER0=0,PLAYER1,PLAYER2,PLAYER3} PLAYERS;
 extern uint8_t ROOMBA_ADDRESSES[][5];
-
 extern uint8_t ROOMBA_FREQUENCIES[];
 
 typedef struct _game_t{
     uint8_t sender_address[5];  /// The return address of the station sending this packet
 
-    // roomba command
-    uint8_t roomba_command;
-    uint8_t roomba_num_arg_bytes;
-    uint8_t roomba_args[8];
+    uint8_t vx;
+    uint8_t vy;
+    uint8_t button;
 
     // if not zero send out
     uint8_t ir_fire;
+    uint8_t ir_data;
 
     //roomba state
     uint8_t game_player_id; // the id of the roomba
@@ -36,15 +35,11 @@ typedef struct _game_t{
 } pf_game_t;
 
 
-typedef enum _ir_commands{
-	SEND_BYTE,
-	REQUEST_DATA,
-	AIM_SERVO
-} IR_COMMANDS;
+void Game_set_packet(pf_game_t* game);
+void Game_fire_ir(pf_game_t* game, uint8_t code);
+void Game_sender_addr(pf_game_t* game, uint8_t player_num);
+void Game_drive(pf_game_t* game,int16_t velocity, int16_t radius);
+void Game_player_state(pf_game_t* game, uint8_t player_id,
+        uint8_t team,uint8_t state, uint8_t hit_flag, uint8_t enemy_id);
 
-typedef enum _roomba_statues{
-	ROOMBA_ALIVE,
-	ROOMBA_DEAD
-}ROOMBA_STATUSES;
-
-#endif /* COPS_AND_ROBBERS_H_ */
+#endif /* _GAME_H_ */
