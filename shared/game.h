@@ -6,8 +6,8 @@
  */
 
 
-#ifndef _GAME_H_
-#define _GAME_H_
+#ifndef GAME_H
+#define GAME_H
 
 #include "avr/io.h"
 
@@ -18,13 +18,9 @@ extern uint8_t ROOMBA_FREQUENCIES[];
 typedef struct _game_t{
     uint8_t sender_address[5];  /// The return address of the station sending this packet
 
-    uint8_t vx;
-    uint8_t vy;
+    uint8_t velocity_x;
+    uint8_t velocity_y;
     uint8_t button;
-
-    // if not zero send out
-    uint8_t ir_fire;
-    uint8_t ir_data;
 
     //roomba state
     uint8_t game_player_id; // the id of the roomba
@@ -34,12 +30,5 @@ typedef struct _game_t{
     uint8_t game_enemy_id; // id of the enemy which shot you, only valid when hit_flag is 1
 } pf_game_t;
 
-
-void Game_set_packet(pf_game_t* game);
-void Game_fire_ir(pf_game_t* game, uint8_t code);
-void Game_sender_addr(pf_game_t* game, uint8_t player_num);
-void Game_drive(pf_game_t* game,int16_t velocity, int16_t radius);
-void Game_player_state(pf_game_t* game, uint8_t player_id,
-        uint8_t team,uint8_t state, uint8_t hit_flag, uint8_t enemy_id);
 
 #endif /* _GAME_H_ */
