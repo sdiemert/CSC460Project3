@@ -1,142 +1,3 @@
-#if 0
-
-#include <avr/io.h>
-#include <util/delay.h>
-#include "rtos/os.h"
-#include "rtos/kernel.h"
-#include "radio/radio.h"
-#include "game.h"
-//#include "joystick.h"
-
-
-radiopacket_t tx_packet;
-pf_game_t game_packet;
-
-uint8_t basestation_address[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-
-void radio_rxhandler(uint8_t);
-
-//a struct to hold all the information for a player
-typedef struct{
-    uint8_t id;
-    uint8_t joystick_port; //the port the joystick is located on.
-    TEAM team;
-    uint8_t status;
-} roomba_t;
-
-roomba_t roombas[4];
-
-void radio_rxhandler(uint8_t val){
-	PORTB ^= ( 1<< PB6);
-	Radio_Flush();
-}
-
-void sendPacket(uint8_t id, uint8_t x, uint8_t y, uint8_t b){
-
-    Radio_Set_Tx_Addr(ROOMBA_ADDRESSES[id]);
-
-    game_packet.velocity_x = x;
-    game_packet.velocity_y = y;
-    game_packet.button = b;
-    game_packet.game_player_id = id;
-    game_packet.game_team = (uint8_t)roombas[id].team;
-    game_packet.game_state = (uint8_t)roombas[id].status;
-
-    memcpy(tx_packet.payload.game.sender_address, basestation_address, RADIO_ADDRESS_LENGTH);
-    tx_packet.payload.game = game_packet;
-
-    uint8_t status= Radio_Transmit(&tx_packet, RADIO_WAIT_FOR_TX);
-    if( status == RADIO_TX_MAX_RT){
-    	Radio_Flush();
-    }
-    PORTB ^= 1 << 7;
-}
-
-void updateRoomba(){
-    uint8_t current_roomba;
-    uint8_t joystick_x = 0;
-    uint8_t joystick_y = 0;
-    uint8_t button = 0;
-
-    while(1) {
-        for(current_roomba = 0; current_roomba < 4; current_roomba ++) {
-
-    	// for(current_roomba = 0; current_roomba < 2; current_roomba ++) {
-            //joystick_x = read_analog(roombas[current_roomba].joystick_port);
-            //joystick_y = read_analog(roombas[current_roomba].joystick_port+1);
-
-
-            // joystick_x = read_analog(1);
-            // joystick_y = read_analog(0);
-
-            // TODO Button Press
-
-            // TODO Update State
-
-            sendPacket(current_roomba, joystick_x, joystick_y, button);
-            // sendPacket(1, joystick_x, joystick_y, button);
-            //PORTB ^= 1 << 7;
-
-
-            Task_Next();
-        }
-    }
-}
-
-void init_game() {
-    // Setup Roombas
-    roombas[0].id = 0;
-    roombas[0].joystick_port = 0;
-    roombas[0].team = ZOMBIE;
-    roombas[0].status = (uint8_t)NORMAL;
-
-    roombas[1].id = 1;
-    roombas[1].joystick_port = 4;
-    roombas[1].team = HUMAN;
-    roombas[1].status = (uint8_t)SHIELDED;
-
-    roombas[2].id = 2;
-    roombas[2].joystick_port = 8;
-    roombas[2].team = HUMAN;
-    roombas[2].status = (uint8_t)SHIELDED;
-
-    roombas[3].id = 3;
-    roombas[3].joystick_port = 12;
-    roombas[3].team = HUMAN;
-    roombas[3].status = (uint8_t)SHIELDED;
-}
-
-
-int r_main(){
-
-    //set up LED
-    DDRB |= 1 << 7;
-    DDRB |= ( 1<< PB6);
-
-    /* Set up radio */
-    DDRL |= (1 << PL2);
-    PORTL &= ~(1 << PL2);
-    _delay_ms(500);
-    PORTL |= (1 << PL2);
-    _delay_ms(500);
-    Radio_Init();
-    Radio_Configure_Rx(RADIO_PIPE_0, basestation_address , ENABLE);
-    Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
-
-    /*setup joystick controllers*/
-    //setup_controllers();
-    init_game();
-
-
-    /*Create our tasks for the base station*/
-    Task_Create_Periodic(updateRoomba, 1,20, 15, 250);
-
-    return 0;
-}
-
-
-#else
-
 #include <avr/io.h>
 #include "rtos/os.h"
 #include "rtos/timer.h"
@@ -151,22 +12,36 @@ int r_main(){
 
 SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
-//PLAYERS roomba_num = PLAYER1;
-uint8_t roomba_num = 0;
+uint8_t roomba_num = 1;
+uint8_t ir_count = 0;
 
-uint8_t base[5] = {0xff,0xff,0xff,0xff,0xff};
+struct player_state {
+    uint8_t player_id;
+    uint8_t team;
+    uint8_t state;
+    uint8_t hit_flag;
+    uint8_t last_ir_code;
+};
+struct player_state player;
 
 void radio_rxhandler(uint8_t pipenumber) {
 	PORTB ^= ( 1<< PB4);
-	// Radio_Flush();
-	//Profile1();
 	Service_Publish(radio_receive_service,0);
 }
 
-//Handle expected IR values, record unexpected values to pass on via radio.
-//	(Get Roomba state via state packets)
 void ir_rxhandler() {
-	//Service_Publish(ir_receive_service,0);
+    PORTB ^= ( 1 << PB6);
+    int16_t value = IR_getLast();
+
+    for(int i = 0; i< 4; ++i){
+        if( value == PLAYER_IDS[i]){
+            if( value != PLAYER_IDS[roomba_num]){
+                PORTB ^= ( 1 << PB6);
+                Service_Publish(ir_receive_service,value);
+            }
+        }
+    }
+
 }
 
 struct roomba_command {
@@ -194,28 +69,31 @@ void SendCommandToRoomba(struct roomba_command* cmd){
 
 void handleRoombaInput(pf_game_t* game)
 {
-	int16_t vx = (game->velocity_x/(255/5) - 2)*50;
-	int16_t vy = (game->velocity_y/(255/5) - 2)*50;
+	int16_t vx = (game->velocity_x/(255/9) - 4)*50;
+	int16_t vy = (game->velocity_y/(255/9) - 4)*50;
 
-	if( vx == 0){
-		if( vy > 0){
-			vy = 1;
-		}else if( vy < 0){
-			vy = -1;
+	if( vy == 0){
+		if( vx > 0){
+			vx = 1;
+		}else if( vx < 0){
+			vx = -1;
 		}
 	}
 
-	Roomba_Drive(vx,vy);
+	Roomba_Drive(vy,vx);
+
+    // fire every 5th packet
+    if( ir_count == 5){
+        IR_transmit(player.player_id);
+        ir_count = 0;
+    }
+    ir_count++;
 }
 
-void handleIRInput(pf_game_t* game)
-{
-
-}
-
-void handleStateInput(pf_game_t* game)
-{
-
+void handleStateInput(pf_game_t* game){
+    player.team = game->game_team;
+    player.state = game->game_state;
+    // do something about LED lights to show zombie or human
 }
 
 void send_back_packet()
@@ -228,29 +106,29 @@ void send_back_packet()
 		packet.payload.game.sender_address[i] = ROOMBA_ADDRESSES[roomba_num][i];
 	}
 
-	packet.payload.game.velocity_x = 200;
-	packet.payload.game.velocity_y = 200;
-	packet.payload.game.button = 200;
-
-	packet.payload.game.game_player_id = 200;
-	packet.payload.game.game_team = 200;
-	packet.payload.game.game_state = 200;
-	packet.payload.game.game_hit_flag = 200;
-	packet.payload.game.game_enemy_id = 200;
+	packet.payload.game.game_player_id = player.player_id;
+	packet.payload.game.game_team = player.team;
+	packet.payload.game.game_state = player.state;
+	packet.payload.game.game_hit_flag = (player.last_ir_code != 0) ? 1: 0;
+	packet.payload.game.game_enemy_id = player.last_ir_code;
 
 	PORTB ^= (1<<PB5);
+
+    // reset the stuff
+    player.hit_flag = 0;
+    player.last_ir_code = 0;
 
     // Radio_Transmit(&packet, RADIO_WAIT_FOR_TX);
     Radio_Transmit(&packet, RADIO_RETURN_ON_TX);
 }
 
 
-void rr_roomba_controler() {
+void rr_roomba_controller() {
 	//Start the Roomba for the first time.
 	Roomba_Init();
 	int16_t value;
 
-	Radio_Set_Tx_Addr(base);
+	Radio_Set_Tx_Addr(base_station_address);
 
 	for(;;) {
 		Service_Subscribe(radio_receive_service,&value);
@@ -265,19 +143,24 @@ void rr_roomba_controler() {
 				if( packet.type == GAME)
 				{
 					handleRoombaInput(&packet.payload.game);
-					//handleIRInput(&packet.payload.game);
-					//handleStateInput(&packet.payload.game);
+					handleStateInput(&packet.payload.game);
 				}
 			}
 
 		} while (result == RADIO_RX_MORE_PACKETS);
-        // Radio_Flush();
 
-		//PORTB ^= (1<<PB4);
 		send_back_packet();
 	}
 }
 
+void rr_ir_controller()
+{
+    int16_t value;
+    for(;;){
+        Service_Subscribe(ir_receive_service,&value);
+        player.last_ir_code = value;
+    }
+}
 
 #define RADIO_VCC_DDR DDRL
 #define RADIO_VCC_PORT PORTL
@@ -298,21 +181,28 @@ int r_main(void)
 
 	DDRB |= (1<<PB4);
 	DDRB |= (1<<PB5);
+    DDRB |= (1<<PB6);
 	PORTB &= ~(1<<PB4);
 	PORTB &= ~(1<<PB5);
+    PORTB &= ~(1<<PB6);
 
 	//Initialize radio.
 	Radio_Init();
-	//IR_init();
-	// Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[0], ENABLE);
-    Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[1], ENABLE);
+	IR_init();
+	Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
 	Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
 
 	radio_receive_service = Service_Init();
-	//ir_receive_service = Service_Init();
-	Task_Create_RR(rr_roomba_controler,0);
+	ir_receive_service = Service_Init();
+	Task_Create_RR(rr_roomba_controller,0);
+    Task_Create_RR(rr_ir_controller,0);
+
+    player.player_id = PLAYER_IDS[roomba_num];
+    player.team = 0;
+    player.state = 0;
+    player.hit_flag = 0;
+    player.last_ir_code = 0;
 
 	Task_Terminate();
 	return 0 ;
 }
-#endif

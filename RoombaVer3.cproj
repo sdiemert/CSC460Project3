@@ -107,6 +107,7 @@
   <ItemGroup>
     <Folder Include="jordanpaul\" />
     <Folder Include="shared\" />
+    <Folder Include="shared\ir\" />
     <Folder Include="shared\radio\" />
     <Folder Include="shared\roomba\" />
     <Folder Include="shared\rtos\" />
@@ -122,6 +123,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="shared\game.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\ir\ir.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\ir\ir.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="shared\profiler.h">
