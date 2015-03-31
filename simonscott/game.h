@@ -12,12 +12,14 @@
 
 extern uint8_t ROOMBA_ADDRESSES[4][5];
 extern uint8_t ROOMBA_FREQUENCIES[4];
+extern uint8_t PLAYER_IDS[4];
 
 extern uint8_t base_station_address[5];// = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 typedef enum _roomba_nums {ZOMBIE=0, HUMAN=1} TEAM;
 typedef enum _zombie_states {NORMAL=0, STUNNED} ZOMBIE_STATES;
 typedef enum _human_states {SHIELDED=0, SHIELDLESS} HUMAN_STATES;
+
 
 typedef struct _game_t{
     uint8_t sender_address[5];  /// The return address of the station sending this packet

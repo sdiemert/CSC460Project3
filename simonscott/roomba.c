@@ -6,7 +6,7 @@
  */
 
 #include <util/delay.h>
-#include "../uart/uart.h"
+#include "uart.h"
 #include "roomba.h"
 #include "roomba_sci.h"
 
