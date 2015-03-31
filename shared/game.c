@@ -7,7 +7,6 @@
 
 #include "game.h"
 #include "avr/io.h"
-#include "roomba/roomba_sci.h"
 
 uint8_t ROOMBA_ADDRESSES[4][5] = {
 	{0x4A,0x4A,0x4A,0x4A,0x4A},

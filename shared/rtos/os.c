@@ -16,7 +16,6 @@
 #include "os.h"
 #include "kernel.h"
 #include "error_code.h"
-#include "../profiler.h"
 
 
 #define CYCLES_PER_MS (TICK_CYCLES / TICK)
@@ -1422,7 +1421,6 @@ uint16_t Now()
  */
 int main()
 {
-    InitializeLogicAnalyzerProfiler();
     //EnableProfileSample1();
 	kernel_init();
     //DisableProfileSample1();

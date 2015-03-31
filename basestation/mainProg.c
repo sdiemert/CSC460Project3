@@ -12,6 +12,9 @@ radiopacket_t tx_packet;
 radiopacket_t rx_packet; 
 pf_game_t game_packet;
 
+SERVICE * rx_service; 
+
+
 uint8_t basestation_address[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 void radio_rxhandler(uint8_t); 
@@ -28,6 +31,7 @@ roomba_t roombas[4];
 
 void radio_rxhandler(uint8_t val){
     PORTB ^= 1 << 6; 
+    Service_Publish(rx_service, 1);
 }
 
 void sendPacket(uint8_t id, uint8_t x, uint8_t y, uint8_t b){
@@ -58,8 +62,10 @@ void updateRoomba(){
 
     while(1) {
         for(current_roomba = 0; current_roomba < 2; current_roomba++) {
-            Radio_Flush();
-            //Radio_Receive(&rx_packet);
+            //Radio_Flush();
+
+            PORTB |= 1 << 5; 
+            
             joystick_x = read_analog(roombas[current_roomba].joystick_port);
             joystick_y = read_analog(roombas[current_roomba].joystick_port+1);                      
 
@@ -73,9 +79,34 @@ void updateRoomba(){
 
             sendPacket(current_roomba, joystick_x, joystick_y, button);
 
+            PORTB &= ~(1 << 5); 
             Task_Next();
         }
     }
+}
+
+void manageReceive(){
+
+    int16_t x; 
+    char output[50];
+    uint8_t result;
+    while(1){
+        Service_Subscribe(rx_service, &x);
+        PORTB |= (1 << 4);
+        result = Radio_Receive(&rx_packet);
+
+        while(result == RADIO_RX_MORE_PACKETS){
+            result = Radio_Receive(&rx_packet);            
+        }
+
+        sprintf(output, "packet from: %d \n\r",rx_packet.payload.game.game_player_id);
+        trace_uart_putstr(output);
+
+        PORTB &= ~(1 << 4);
+
+        Task_Next(); 
+    }
+
 }
 
 void init_game() {
@@ -107,6 +138,8 @@ int r_main(){
     //set up LED
     DDRB |= 1 << 7; 
     DDRB |= 1 << 6; 
+    DDRB |= 1 << 5; 
+    DDRB |= 1 << 4; 
 
     /* Set up radio */ 
     DDRL |= (1 << PL2); 
@@ -118,6 +151,9 @@ int r_main(){
     Radio_Configure_Rx(RADIO_PIPE_0, basestation_address, ENABLE); 
     Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER); 
 
+
+    rx_service = Service_Init();
+
     trace_uart_init(); 
 
     /*setup joystick controllers*/
@@ -125,7 +161,8 @@ int r_main(){
     init_game(); 
 
     /*Create our tasks for the base station*/
-    Task_Create_Periodic(updateRoomba, 1, 20, 15, 0);
+    Task_Create_Periodic(updateRoomba, 1, 20, 15, 250);
+    Task_Create_RR(manageReceive, 0);
 
     return 0; 
 }
