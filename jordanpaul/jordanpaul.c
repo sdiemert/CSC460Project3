@@ -12,13 +12,17 @@
 
 SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
-//PLAYERS roomba_num = PLAYER1;
-// uint8_t roomba_num = 0;
-// uint8_t ir_count = 0;
-// uint8_t ir_code = 'A';
 uint8_t roomba_num = 1;
 uint8_t ir_count = 0;
-uint8_t ir_code = 'B';
+
+struct player_state {
+    uint8_t player_id;
+    uint8_t team;
+    uint8_t state;
+    uint8_t hit_flag;
+    uint8_t last_ir_code;
+};
+struct player_state player;
 
 void radio_rxhandler(uint8_t pipenumber) {
 	PORTB ^= ( 1<< PB4);
@@ -28,7 +32,16 @@ void radio_rxhandler(uint8_t pipenumber) {
 void ir_rxhandler() {
     PORTB ^= ( 1 << PB6);
     int16_t value = IR_getLast();
-	Service_Publish(ir_receive_service,value);
+
+    for(int i = 0; i< 4; ++i){
+        if( value == PLAYER_IDS[i]){
+            if( value != PLAYER_IDS[roomba_num]){
+                PORTB ^= ( 1 << PB6);
+                Service_Publish(ir_receive_service,value);
+            }
+        }
+    }
+
 }
 
 struct roomba_command {
@@ -56,31 +69,31 @@ void SendCommandToRoomba(struct roomba_command* cmd){
 
 void handleRoombaInput(pf_game_t* game)
 {
-	int16_t vx = (game->velocity_x/(255/5) - 2)*50;
-	int16_t vy = (game->velocity_y/(255/5) - 2)*50;
+	int16_t vx = (game->velocity_x/(255/9) - 4)*50;
+	int16_t vy = (game->velocity_y/(255/9) - 4)*50;
 
-	if( vx == 0){
-		if( vy > 0){
-			vy = 1;
-		}else if( vy < 0){
-			vy = -1;
+	if( vy == 0){
+		if( vx > 0){
+			vx = 1;
+		}else if( vx < 0){
+			vx = -1;
 		}
 	}
 
-	Roomba_Drive(vx,vy);
+	Roomba_Drive(vy,vx);
 
     // fire every 5th packet
     if( ir_count == 5){
-        IR_transmit(ir_code);
+        IR_transmit(player.player_id);
         ir_count = 0;
     }
     ir_count++;
-
 }
 
-void handleStateInput(pf_game_t* game)
-{
-
+void handleStateInput(pf_game_t* game){
+    player.team = game->game_team;
+    player.state = game->game_state;
+    // do something about LED lights to show zombie or human
 }
 
 void send_back_packet()
@@ -93,17 +106,17 @@ void send_back_packet()
 		packet.payload.game.sender_address[i] = ROOMBA_ADDRESSES[roomba_num][i];
 	}
 
-	packet.payload.game.velocity_x = 200;
-	packet.payload.game.velocity_y = 200;
-	packet.payload.game.button = 200;
-
-	packet.payload.game.game_player_id = 200;
-	packet.payload.game.game_team = 200;
-	packet.payload.game.game_state = 200;
-	packet.payload.game.game_hit_flag = 200;
-	packet.payload.game.game_enemy_id = 200;
+	packet.payload.game.game_player_id = player.player_id;
+	packet.payload.game.game_team = player.team;
+	packet.payload.game.game_state = player.state;
+	packet.payload.game.game_hit_flag = (player.last_ir_code != 0) ? 1: 0;
+	packet.payload.game.game_enemy_id = player.last_ir_code;
 
 	PORTB ^= (1<<PB5);
+
+    // reset the stuff
+    player.hit_flag = 0;
+    player.last_ir_code = 0;
 
     // Radio_Transmit(&packet, RADIO_WAIT_FOR_TX);
     Radio_Transmit(&packet, RADIO_RETURN_ON_TX);
@@ -145,16 +158,7 @@ void rr_ir_controller()
     int16_t value;
     for(;;){
         Service_Subscribe(ir_receive_service,&value);
-
-        if( roomba_num == 0){
-            if( value == 'A'){
-                PORTB ^= ( 1 << PB6);
-            }
-        }else if(roomba_num == 1){
-            if( value == 'B'){
-                PORTB ^= ( 1 << PB6);
-            }
-        }
+        player.last_ir_code = value;
     }
 }
 
@@ -192,6 +196,12 @@ int r_main(void)
 	ir_receive_service = Service_Init();
 	Task_Create_RR(rr_roomba_controller,0);
     Task_Create_RR(rr_ir_controller,0);
+
+    player.player_id = PLAYER_IDS[roomba_num];
+    player.team = 0;
+    player.state = 0;
+    player.hit_flag = 0;
+    player.last_ir_code = 0;
 
 	Task_Terminate();
 	return 0 ;
