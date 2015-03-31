@@ -16,6 +16,7 @@ SERVICE * rx_service;
 
 
 uint8_t basestation_address[5] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+uint8_t zombie_count = 1;
 
 void radio_rxhandler(uint8_t); 
 
@@ -31,6 +32,13 @@ typedef struct{
 } roomba_t; 
 
 roomba_t roombas[4];
+
+// End game task
+void end_game() {
+    while(1) {
+        // TODO End game logic
+    }
+}
 
 void radio_rxhandler(uint8_t val){
     PORTB ^= 1 << 6; 
@@ -123,9 +131,9 @@ void manageReceive(){
                 rx_packet.payload.game.game_team,
                 rx_packet.payload.game.game_state
         );
-        trace_uart_putstr(output);
 
-        roomba_game_state = rx_packet.payload.game;
+        trace_uart_putstr(output);
+        //roomba_game_state = rx_packet.payload.game;
 
         // Handle a hit
         if(roomba_game_state.game_hit_flag == 1) {
@@ -144,10 +152,16 @@ void manageReceive(){
             } else if(roombas[player_hit].team == HUMAN  && roombas[player_hit].status == (uint8_t)SHIELDLESS && roombas[player_shooting].team == ZOMBIE) {
                 roombas[player_hit].team = ZOMBIE;
                 roombas[player_hit].status = (uint8_t)NORMAL;
+                zombie_count ++;
             }
 
             // Increment the player shooting's hit counter
             roombas[player_shooting].hits += 1;
+        }
+
+        // Check if we should end the game
+        if(zombie_count == 4) {
+            Task_Create_System(end_game, 0);
         }
 
         PORTB &= ~(1 << 4);
