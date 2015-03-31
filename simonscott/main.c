@@ -68,17 +68,19 @@ void SendCommandToRoomba(struct roomba_command* cmd){
 void handleRoombaInput(pf_game_t* game)
 {
 	int16_t vx = (game->velocity_x/(255/9) - 4)*50;
-	int16_t vy = (game->velocity_y/(255/9) - 4)*50;
+	int16_t vy = (game->velocity_y/(255/9) - 4)*-50;
 
-	if( vy == 0){
+	if(vy == 0){
 		if( vx > 0){
 			vx = 1;
-		}else if( vx < 0){
+			vy = 200;
+		} else if(vx < 0){
 			vx = -1;
+			vy = 200;
 		}
 	}
 
-	Roomba_Drive(vy,vx);
+	Roomba_Drive(vy,-1*vx);
 
     // fire every 5th packet
     if( ir_count == 5){

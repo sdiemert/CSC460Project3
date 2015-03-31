@@ -79,9 +79,10 @@ void updateRoomba(){
             joystick_x = read_analog(roombas[current_roomba].joystick_port);
             joystick_y = read_analog(roombas[current_roomba].joystick_port+1);                      
 
-            //sprintf(output, "%d: (%d,%d)\n\r",current_roomba,joystick_x, joystick_y);
-
-            //trace_uart_putstr(output);
+            if(current_roomba==1){
+               sprintf(output, "%d: (%d,%d)\n\r",current_roomba,joystick_x, joystick_y) ;
+            }
+            trace_uart_putstr(output);
 
             // TODO Button Press
 
@@ -132,7 +133,7 @@ void manageReceive(){
                 rx_packet.payload.game.game_state
         );
 
-        trace_uart_putstr(output);
+        //trace_uart_putstr(output);
         //roomba_game_state = rx_packet.payload.game;
 
         // Handle a hit
