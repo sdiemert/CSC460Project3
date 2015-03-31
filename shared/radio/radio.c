@@ -28,6 +28,13 @@
 #define CE_PIN		PH5
 #define CSN_PIN		PH6
 
+// #define CE_DDR		DDRL
+// #define CSN_DDR		DDRL
+// #define CE_PORT		PORTL
+// #define CSN_PORT	PORTL
+// #define CE_PIN		PL1 // pin 48
+// #define CSN_PIN		PL0 // pin 49
+
 
 // Definitions for selecting and enabling the radio
 #define CSN_HIGH()	CSN_PORT |=  _BV(CSN_PIN);
@@ -232,8 +239,6 @@ void Radio_Init()
 	DEBUG_INIT;
 	DEBUG_2_LOW;
 	DEBUG_1_LOW;
-
-
 
 	// disable radio during config
 	CE_LOW();

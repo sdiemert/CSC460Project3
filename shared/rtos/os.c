@@ -1185,7 +1185,8 @@ void OS_Abort(void)
     Disable_Interrupt();
 
     /* Initialize port for output */
-    DDRH = LED_RED_MASK | LED_GREEN_MASK;
+    // DDRH = LED_RED_MASK | LED_GREEN_MASK;
+    DDRB = LED_RED_MASK | LED_GREEN_MASK;
 
     if(error_msg < ERR_RUN_0_USER_CALLED_OS_ABORT)
     {

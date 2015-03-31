@@ -32,10 +32,10 @@ extern "C" {
 #define TICK_CYCLES     (((F_CPU / TIMER_PRESCALER) / 1000) * TICK)
 
 /** LEDs for OS_Abort() */
-#define LED_RED_MASK    (uint8_t)(_BV(PH5))
+#define LED_RED_MASK    (uint8_t)(_BV(PB7))
 
 /** LEDs for OS_Abort() */
-#define LED_GREEN_MASK    (uint8_t)(_BV(PH6))
+#define LED_GREEN_MASK    (uint8_t)(_BV(PB7))
 
 
 /* Typedefs and data structures. */
@@ -61,12 +61,12 @@ typedef enum
 {
     NONE = 0,
     TIMER_EXPIRED,
-	
+
     TASK_CREATE,
     TASK_TERMINATE,
     TASK_NEXT,
     TASK_GET_ARG,
-	
+
 	SERVICE_INIT,
 	SERVICE_SUB,
 	SERVICE_PUB
@@ -79,7 +79,7 @@ typedef enum
 	PERIODIC = 1,
 	ROUND_ROBIN = 2,
 	IDLE = -1
-} 
+}
 task_priority_t;
 
 /**
@@ -100,9 +100,9 @@ typedef struct ptd_metadata_struct periodic_task_metadata_t;
 struct ptd_metadata_struct
 {
 	struct td_struct* task;
-	uint16_t period; //period in 5ms ticks. 
-	uint16_t wcet;   //worst case execution time in ticks. 
-	uint16_t next;   //Next/first time to fire. 
+	uint16_t period; //period in 5ms ticks.
+	uint16_t wcet;   //worst case execution time in ticks.
+	uint16_t next;   //Next/first time to fire.
 	struct ptd_metadata_struct* nextT;
 } ;
 
@@ -116,16 +116,16 @@ typedef struct td_struct
     uint8_t stack[WORKSPACE];
     /** A variable to save the hardware SP into when the task is suspended. */
     uint8_t* volatile sp;   /* stack pointer into the "workSpace" */
-	
+
 	task_priority_t priority;
 	periodic_task_metadata_t* periodic_desc;
-	
+
     /** The state of the task in this descriptor. */
     task_state_t state;
     /** The argument passed to Task_Create for this task. */
     int arg;
 
-    /* A pointer to where a task expects their data to be published */  
+    /* A pointer to where a task expects their data to be published */
     int16_t * data;
 
 	struct td_struct* next;
@@ -142,7 +142,7 @@ typedef struct
 }
 task_queue_t;
 
-typedef struct 
+typedef struct
 {
 	periodic_task_metadata_t* head;
 	periodic_task_metadata_t* tail;
@@ -150,12 +150,12 @@ typedef struct
 periodic_task_queue_t;
 
 /**
- * The basic service struct. Contains a queue_t struct that 
+ * The basic service struct. Contains a queue_t struct that
  * holds all tasks subscribed to it.
  */
 struct service
 {
-	task_queue_t task_queue;		
+	task_queue_t task_queue;
 	task_queue_t data_queue;
 };
 
