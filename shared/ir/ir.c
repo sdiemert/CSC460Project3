@@ -75,57 +75,57 @@ void IR_init() {
 
 
 //Receiving a signal.
-// ISR(INT5_vect) {
-// 	if(!is_receiving) {
-// 		//Start a new byte, start the timers.
-// 		is_receiving = 1;
-// 		currentBit = 0;
-// 		currentByte = 0;
+ISR(INT5_vect) {
+	if(!is_receiving) {
+		//Start a new byte, start the timers.
+		is_receiving = 1;
+		currentBit = 0;
+		currentByte = 0;
 
-// 		//Clear any existing timer interrupts.
-// 		TIFR3 |= (1<<OCF3A);
+		//Clear any existing timer interrupts.
+		TIFR3 |= (1<<OCF3A);
 
-// 		//Delay by 1.5 bit lengths.
-// 		// i.e 8000 + 8000
-// 		OCR3A = TCNT3 + 12000;
-// 		// enable timer 3 interrupts
-// 		TIMSK3 |= (1<<OCIE3A);
-// 	}
-// }
+		//Delay by 1.5 bit lengths.
+		// i.e 8000 + 8000
+		OCR3A = TCNT3 + 12000;
+		// enable timer 3 interrupts
+		TIMSK3 |= (1<<OCIE3A);
+	}
+}
 
-// //Read a new arriving signal.
-// ISR(TIMER3_COMPA_vect) {
-// 	if(is_receiving) {
+//Read a new arriving signal.
+ISR(TIMER3_COMPA_vect) {
+	if(is_receiving) {
 
-// 		// check to see if the input pin is HIGH ( digital pin 3)
-// 		if(!(PINE & (1<<PE5)) ) {
-// 			currentByte |= (1<<currentBit);
-// 		}
+		// check to see if the input pin is HIGH ( digital pin 3)
+		if(!(PINE & (1<<PE5)) ) {
+			currentByte |= (1<<currentBit);
+		}
 
 
-// 		++currentBit;
-// 		OCR3A += 8000;
+		++currentBit;
+		OCR3A += 8000;
 
-// 		if(currentBit >= 8) {
-// 			is_receiving = 0;
+		if(currentBit >= 8) {
+			is_receiving = 0;
 
-// 			// disable further timer3 interrupts
-// 			TIMSK3 &= ~(1<<OCIE3A);
+			// disable further timer3 interrupts
+			TIMSK3 &= ~(1<<OCIE3A);
 
-// 			// clear any pending timer3 interrupts
-// 			TIFR3 |= (1<<OCF3A);
+			// clear any pending timer3 interrupts
+			TIFR3 |= (1<<OCF3A);
 
-// 			// clear the any interrupts waiting on the IR receiver
-// 			EIFR |= (1<<INTF5);
+			// clear the any interrupts waiting on the IR receiver
+			EIFR |= (1<<INTF5);
 
-// 			// here we should call
-// 			outputByte = currentByte;
-// 			ir_rxhandler();
-// 		}
-// 	}else if (is_transmitting) {
+			// here we should call
+			outputByte = currentByte;
+			ir_rxhandler();
+		}
+	}else if (is_transmitting) {
 
-// 	}
-// }
+	}
+}
 
 
 void enable_interrupt() {

@@ -1201,14 +1201,14 @@ void OS_Abort(void)
 
     for(;;)
     {
-        PORTH = (uint8_t)(LED_RED_MASK | LED_GREEN_MASK);
+        PORTB = (uint8_t)(LED_RED_MASK | LED_GREEN_MASK);
 
         for(i = 0; i < 100; ++i)
         {
                _delay_25ms();
         }
 
-        PORTH = (uint8_t) 0;
+        PORTB = (uint8_t) 0;
 
         for(i = 0; i < 40; ++i)
         {
@@ -1217,14 +1217,14 @@ void OS_Abort(void)
 
         for(j = 0; j < flashes; ++j)
         {
-            PORTH = mask;
+            PORTB = mask;
 
             for(i = 0; i < 10; ++i)
             {
                 _delay_25ms();
             }
 
-            PORTH = (uint8_t) 0;
+            PORTB = (uint8_t) 0;
 
             for(i = 0; i < 10; ++i)
             {
