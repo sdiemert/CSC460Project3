@@ -86,10 +86,15 @@ void manageReceive(){
 
     int16_t x; 
     char output[50];
-
+    uint8_t result;
     while(1){
         Service_Subscribe(rx_service, &x);
-        Radio_Receive(&rx_packet);
+        result = Radio_Receive(&rx_packet);
+
+        while(result == RADIO_RX_MORE_PACKETS){
+            result = Radio_Receive(&rx_packet);            
+        }
+
         sprintf(output, "packet from: %d \n\r",rx_packet.payload.game.game_player_id);
         trace_uart_putstr(output);
         Task_Next(); 
@@ -138,7 +143,7 @@ int r_main(){
     Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER); 
 
 
-    Service_Init(rx_service);
+    rx_service = Service_Init();
 
     trace_uart_init(); 
 
@@ -147,8 +152,7 @@ int r_main(){
     init_game(); 
 
     /*Create our tasks for the base station*/
-    Task_Create_Periodic(updateRoomba, 1, 20, 15, 0);
-
+    Task_Create_Periodic(updateRoomba, 1, 20, 15, 250);
     Task_Create_RR(manageReceive, 0);
 
     return 0; 
