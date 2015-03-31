@@ -63,6 +63,8 @@ void updateRoomba(){
     while(1) {
         for(current_roomba = 0; current_roomba < 2; current_roomba++) {
             //Radio_Flush();
+
+            PORTB |= 1 << 5; 
             
             joystick_x = read_analog(roombas[current_roomba].joystick_port);
             joystick_y = read_analog(roombas[current_roomba].joystick_port+1);                      
@@ -77,6 +79,7 @@ void updateRoomba(){
 
             sendPacket(current_roomba, joystick_x, joystick_y, button);
 
+            PORTB &= ~(1 << 5); 
             Task_Next();
         }
     }
@@ -89,6 +92,7 @@ void manageReceive(){
     uint8_t result;
     while(1){
         Service_Subscribe(rx_service, &x);
+        PORTB |= (1 << 4);
         result = Radio_Receive(&rx_packet);
 
         while(result == RADIO_RX_MORE_PACKETS){
@@ -97,6 +101,9 @@ void manageReceive(){
 
         sprintf(output, "packet from: %d \n\r",rx_packet.payload.game.game_player_id);
         trace_uart_putstr(output);
+
+        PORTB &= ~(1 << 4);
+
         Task_Next(); 
     }
 
@@ -131,6 +138,8 @@ int r_main(){
     //set up LED
     DDRB |= 1 << 7; 
     DDRB |= 1 << 6; 
+    DDRB |= 1 << 5; 
+    DDRB |= 1 << 4; 
 
     /* Set up radio */ 
     DDRL |= (1 << PL2); 
