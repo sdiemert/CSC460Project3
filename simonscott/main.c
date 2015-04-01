@@ -16,12 +16,12 @@ struct player_state player;
 
 
 void radio_rxhandler(uint8_t pipenumber) {
-	PORTB ^= ( 1<< RX_RADIO_PACKET);
+	RADIO_PACKET_RX_TOGGLE();
 	Service_Publish(radio_receive_service,0);
 }
 
 void ir_rxhandler() {
-    PORTB ^= ( 1 << IR_RX);
+    IR_RX_TOGGLE();
     int16_t value = IR_getLast();
     int i = 0; 
     for(i = 0; i< 4; ++i){
@@ -107,7 +107,7 @@ void send_back_packet()
 	packet.payload.game.game_hit_flag = (player.last_ir_code != 0) ? 1: 0;
 	packet.payload.game.game_enemy_id = player.last_ir_code;
 
-	PORTB ^= (1<<TX_RADIO_PACKET);
+	RADIO_PACKET_TX_TOGGLE();
 
     // reset the stuff
     player.hit_flag = 0;
