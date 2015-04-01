@@ -112,6 +112,7 @@
     <Folder Include="shared\radio\" />
     <Folder Include="shared\roomba\" />
     <Folder Include="shared\rtos\" />
+    <Folder Include="shared\sonar\" />
     <Folder Include="shared\trace\" />
     <Folder Include="shared\trace_uart\" />
     <Folder Include="shared\uart\" />
@@ -196,6 +197,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="shared\rtos\timer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\sonar\sonar.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\sonar\sonar.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="shared\trace\trace.c">

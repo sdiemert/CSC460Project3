@@ -252,6 +252,8 @@ int r_main(){
 #include "ir/ir.h"
 #include "game.h"
 #include "profiler.h"
+#include "trace_uart/trace_uart.h"
+#include "sonar/sonar.h"
 
 #define LED_PORT      PORTB
 #define LED_DDR       DDRB
@@ -549,29 +551,47 @@ void init_model(Model_t* model)
 }
 
 
+void Sonar_rxhandler(int16_t distance){
+}
+
+void sonar_value()
+{
+    int16_t dist;
+
+    for(;;){
+        PORTB ^= ( 1 << PB6);
+        Sonar_fire();
+        Task_Next();
+    }
+}
+
 int r_main(void)
 {
-	power_cycle_radio();
+	// power_cycle_radio();
     setup_leds();
-    init_model(&model);
+ //    init_model(&model);
 
 	//Initialize radio.
-	Radio_Init();
-	IR_init();
-	Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
-	Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
+	// Radio_Init();
+	// IR_init();
+	// Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
+	// Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
 
     // Create the services
-	radio_receive_service = Service_Init();
-	ir_receive_service = Service_Init();
+	// radio_receive_service = Service_Init();
+	// ir_receive_service = Service_Init();
 
     // Create the tasks
-    Task_Create_RR(rr_roomba_controller,0);
-    Task_Create_RR(rr_ir_controller,0);
+    // Task_Create_RR(rr_roomba_controller,0);
+    // Task_Create_RR(rr_ir_controller,0);
 
     // periodic tasks to control blinking the led + controlling a stunned zombie
     // they will be flag gaurded such that they only run once they are allowed.
-    Task_Create_Periodic(p_blink_led ,0,10,3,250);
+    // Task_Create_Periodic(p_blink_led ,0,10,3,250);
+
+    Sonar_init();
+    trace_uart_init();
+    Task_Create_Periodic(sonar_value,0,20,5,5);
 
 	Task_Terminate();
 	return 0 ;
