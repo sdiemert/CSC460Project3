@@ -108,6 +108,7 @@
     <Folder Include="jordanpaul\" />
     <Folder Include="shared\" />
     <Folder Include="shared\ir\" />
+    <Folder Include="shared\joystick\" />
     <Folder Include="shared\radio\" />
     <Folder Include="shared\roomba\" />
     <Folder Include="shared\rtos\" />
@@ -129,6 +130,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="shared\ir\ir.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\joystick\joystick.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\joystick\joystick.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="shared\profiler.h">
