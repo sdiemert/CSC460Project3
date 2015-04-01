@@ -1,15 +1,8 @@
-#include <avr/io.h>
-#include "os.h"
-#include "radio.h"
-#include "roomba.h"
-#include "roomba_sci.h"
-#include "uart.h"
-#include "ir.h"
-#include "game.h"
+#include "main.h"
 
 SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
-uint8_t roomba_num = 1;
+uint8_t roomba_num = 0;
 uint8_t ir_count = 0;
 
 struct player_state {
@@ -21,13 +14,14 @@ struct player_state {
 };
 struct player_state player;
 
+
 void radio_rxhandler(uint8_t pipenumber) {
-	PORTB ^= ( 1<< PB4);
+	RADIO_PACKET_RX_TOGGLE();
 	Service_Publish(radio_receive_service,0);
 }
 
 void ir_rxhandler() {
-    PORTB ^= ( 1 << PB6);
+    IR_RX_TOGGLE();
     int16_t value = IR_getLast();
     int i = 0; 
     for(i = 0; i< 4; ++i){
@@ -113,7 +107,7 @@ void send_back_packet()
 	packet.payload.game.game_hit_flag = (player.last_ir_code != 0) ? 1: 0;
 	packet.payload.game.game_enemy_id = player.last_ir_code;
 
-	PORTB ^= (1<<PB5);
+	RADIO_PACKET_TX_TOGGLE();
 
     // reset the stuff
     player.hit_flag = 0;
@@ -186,6 +180,18 @@ int r_main(void)
 	PORTB &= ~(1<<PB4);
 	PORTB &= ~(1<<PB5);
     PORTB &= ~(1<<PB6);
+
+	DDRC |= (1 << PC0); //stun/sheild indicator (pin 37 on arduino mega)
+	DDRC |= (1 << PC1); //Human Indicator (pin 36 on arduino mega)
+	DDRC |= (1 << PC2); //Zombie indicator (pin 35 on arduino mega)
+
+	PORTC &= ~(1<<PC0);
+	PORTC &= ~(1<<PC1);
+	PORTC &= ~(1<<PC2);
+
+	HUMAN_TEAM_INDICATOR_ON();
+	ZOMBIE_TEAM_INDICATOR_ON();
+	ZOMBIE_STUN_INDICATOR_ON();
 
 	//Initialize radio.
 	Radio_Init();

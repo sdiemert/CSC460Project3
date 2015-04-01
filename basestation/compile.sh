@@ -43,5 +43,5 @@ echo "Making HEX..."
 avr-objcopy -j .text -j .data -O ihex out.elf main.hex
 
 
-sudo avrdude -p m2560 -c stk500 -P /dev/tty.usbmodem1451 -U flash:w:main.hex
+sudo avrdude -p m2560 -c stk500 -P /dev/tty.usbmodem1411 -U flash:w:main.hex
 
