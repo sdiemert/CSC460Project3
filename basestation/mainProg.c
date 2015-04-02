@@ -169,7 +169,7 @@ void manageReceive(){
             // If the player hit is a human and the player shooting is a zombie, the human should lose his/her shield
             if(roombas[player_hit].team == HUMAN && roombas[player_hit].status == (uint8_t)SHIELDED && roombas[player_shooting].team == ZOMBIE) {
                 roombas[player_hit].status = (uint8_t)SHIELDLESS;
-            } else if(roombas[player_hit].team == ZOMBIE && roombas[player_shooting].team == HUMAN) {
+            } else if(roombas[player_hit].team == ZOMBIE && roombas[player_shooting].team == HUMAN && roombas[player_hit].status != (uint8_t)STUNNED) {
                 roombas[player_hit].status = (uint8_t)STUNNED;
                 roombas[player_hit].stun_duration += 6;
                 roombas[player_hit].stun_elapsed = 0;

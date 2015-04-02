@@ -97,7 +97,7 @@ void handleRoombaInput(pf_game_t* game)
 	// Trollolololololololol
 	if(game->game_team == ZOMBIE && game->game_state == (uint8_t)STUNNED) {
 		vx = 1;
-		vy = 300;		
+		vy = 150;		
 	}
 
 	Roomba_Drive(vy,-1*vx);
