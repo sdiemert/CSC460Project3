@@ -1,4 +1,5 @@
 #include "uart.h"
+#include "../profiler.h"
 
 #define UART_BUFFER_SIZE    32
 
@@ -70,14 +71,18 @@ void Roomba_UART_Init(UART_BPS baud){
 	}
 
 	// Clear USART Transmit complete flag, normal USART transmission speed
-	UCSR1A = (1 << TXC1) | (0 << U2X1);
+	UCSR1A = (1 << TXC1) | (0 << U2X1) | ( 1 << RXC1);
 
 	// Enable receiver, transmitter, and rx complete interrupt.
 	// Enable transmission
-	UCSR1B = (1<<TXEN1);
+	UCSR1B = (1<<TXEN1) | (1 << RXEN1) | ( 1 << RXCIE1);
 
-	// 8-bit data
-	UCSR1C = ((1<<UCSZ11)|(1<<UCSZ10));
+
+	// 8-bit data, 2 bit stop
+	// UCSR1C = ((1<<UCSZ11)|(1<<UCSZ10));
+
+	// 8-bit data, 2 bit stop
+	UCSR1C = (1<<USBS1) | (1<<UCSZ10) | (1<<UCSZ11);
 
 	// disable 2x speed
 	UCSR1A &= ~(1<<U2X1);
@@ -110,7 +115,6 @@ ISR(USART1_RX_vect)
 	// FEn - frame error
 	// DORn - data overrun
 	// UPEn - uart pairty error
-
     uart_buffer[uart_buffer_index] = UDR1;
     uart_buffer_index = (uart_buffer_index + 1) % UART_BUFFER_SIZE;
 }
