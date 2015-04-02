@@ -7,7 +7,7 @@
 
 #include "game.h"
 #include "uart/uart.h"
-#include "roomba/roomba_sci.h"
+#include "roomba_sci.h"
 #include "avr/io.h"
 
 uint8_t ROOMBA_ADDRESSES[4][5] = {

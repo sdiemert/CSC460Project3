@@ -99,6 +99,7 @@ void Roomba_UpdateSensorPacket(ROOMBA_SENSOR_GROUP group, roomba_sensor_data_t* 
 //Used to stop the Roomba when it gets shot.
 void Roomba_Drive( int16_t velocity, int16_t radius )
 {
+	Roomba_Send_Byte(SAFE);
 	Roomba_Send_Byte(DRIVE);
 	Roomba_Send_Byte(HIGH_BYTE(velocity));
 	Roomba_Send_Byte(LOW_BYTE(velocity));
@@ -109,6 +110,7 @@ void Roomba_Drive( int16_t velocity, int16_t radius )
 // Set the Roomba's main LED color,intensity and stuff
 void Roomba_LED(int8_t led_bits,int8_t color, int8_t intensity)
 {
+	Roomba_Send_Byte(SAFE);
 	Roomba_Send_Byte(LEDS);
 	Roomba_Send_Byte(led_bits);
 	Roomba_Send_Byte(color);

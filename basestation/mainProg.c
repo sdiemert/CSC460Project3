@@ -51,7 +51,7 @@ void sendPacket(uint8_t id, uint8_t x, uint8_t y, uint8_t b){
 
     game_packet.velocity_x = x;
     game_packet.velocity_y = y;
-    game_packet.button ^= game_packet.button;
+    game_packet.button = game_packet.button;
     game_packet.game_player_id = id;
     game_packet.game_team = (uint8_t)roombas[id].team;
     game_packet.game_state = (uint8_t)roombas[id].status;
@@ -79,15 +79,15 @@ void updateRoomba(){
             joystick_x = read_analog(roombas[current_roomba].joystick_port);
             joystick_y = read_analog(roombas[current_roomba].joystick_port+1);                      
 
-            if(current_roomba==1){
-               sprintf(output, "%d: (%d,%d)\n\r",current_roomba,joystick_x, joystick_y) ;
-            }
-            trace_uart_putstr(output);
+            //if(current_roomba==1){
+            //   sprintf(output, "%d: (%d,%d)\n\r",current_roomba,joystick_x, joystick_y) ;
+            //}
+            //trace_uart_putstr(output);
 
             // TODO Button Press
 
             // Handle stunned zombies here. Turn their state back to normal after a certain amount of time.
-            if(roombas[current_roomba].status == (uint8_t)STUNNED){
+            if(roombas[current_roomba].team == ZOMBIE && roombas[current_roomba].status == (uint8_t)STUNNED){
                 if(roombas[current_roomba].stun_elapsed >= roombas[current_roomba].stun_duration){
                     //don't need to stun anymore.
                     roombas[current_roomba].status = (uint8_t)NORMAL; 
@@ -107,6 +107,25 @@ void updateRoomba(){
             PORTB &= ~(1 << 5); 
             Task_Next();
         }
+    }
+}
+
+uint8_t map_id_to_key(uint8_t id){
+    switch(id) {
+        case 74:
+            return 0;
+            break;
+        case 75:
+            return 1;
+            break;
+        case 76:
+            return 2;
+            break;
+        case 77:
+            return 3;
+            break;
+        default:
+            break;
     }
 }
 
@@ -134,19 +153,23 @@ void manageReceive(){
         );
 
         //trace_uart_putstr(output);
-        //roomba_game_state = rx_packet.payload.game;
+        roomba_game_state = rx_packet.payload.game;
 
         // Handle a hit
         if(roomba_game_state.game_hit_flag == 1) {
-            uint8_t player_hit = roomba_game_state.game_player_id;
-            uint8_t player_shooting = roomba_game_state.game_enemy_id;
+            uint8_t player_hit = map_id_to_key(roomba_game_state.game_player_id);
+            uint8_t player_shooting = map_id_to_key(roomba_game_state.game_enemy_id);
+
+            //sprintf(output, "player_hit: %d, player_shooting: %d, player_hit.team %d, player_shooting.team %d\n\r", player_hit, player_shooting, (uint8_t)roombas[player_hit].team, (uint8_t)roombas[player_shooting].team);
+            //sprintf(output, "player_hit.team %d, player_shooting.team %d\n\r", (uint8_t)roombas[player_hit].team, (uint8_t)roombas[player_shooting].team);
+
 
             // TODO Error Handling
 
             // If the player hit is a human and the player shooting is a zombie, the human should lose his/her shield
             if(roombas[player_hit].team == HUMAN && roombas[player_hit].status == (uint8_t)SHIELDED && roombas[player_shooting].team == ZOMBIE) {
                 roombas[player_hit].status = (uint8_t)SHIELDLESS;
-            } else if(roombas[player_hit].team == ZOMBIE && roombas[player_shooting].team == HUMAN) {
+            } else if(roombas[player_hit].team == ZOMBIE && roombas[player_shooting].team == HUMAN && roombas[player_hit].status != (uint8_t)STUNNED) {
                 roombas[player_hit].status = (uint8_t)STUNNED;
                 roombas[player_hit].stun_duration += 6;
                 roombas[player_hit].stun_elapsed = 0;
