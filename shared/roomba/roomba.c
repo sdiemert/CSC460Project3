@@ -167,7 +167,7 @@ uint8_t Roomba_LightBumperDetection(){
     Roomba_Send_Byte(SENSORS); // 45 is the Light Bumper Sensor pakcet Id
     Roomba_Send_Byte(45); // 45 is the Light Bumper Sensor pakcet Id
     while( uart_bytes_received() != 1);
-    int8_t rs = uart_get_byte(0);
+    uint8_t rs = uart_get_byte(0);
     uart_reset_receive();
     return rs;
 }

@@ -175,6 +175,12 @@
     <Compile Include="shared\roomba\roomba_led_sci.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="shared\roomba\roomba_music.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\roomba\roomba_music.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="shared\roomba\roomba_sci.h">
       <SubType>compile</SubType>
     </Compile>
