@@ -9,6 +9,7 @@
 #include "profiler.h"
 #include "trace_uart/trace_uart.h"
 // #include "sonar/sonar.h"
+#include "roomba/roomba_music.h"
 
 #define LED_PORT      PORTB
 #define LED_DDR       DDRB
@@ -368,14 +369,48 @@ void rr_jordan()
         PORTB ^= ( 1 << PB6);
 
         Roomba_UpdateSensorPacket(EXTERNAL,&data);
-        if( data.bumps_wheeldrops & (1 << BUMP_RIGHT )){
+        if( (data.bumps_wheeldrops & (1 << BUMP_RIGHT )) != 0){
             Roomba_Drive(20,-1);
-        }else if( data.bumps_wheeldrops & ( 1 << BUMP_LEFT)){
+        }else if( (data.bumps_wheeldrops & ( 1 << BUMP_LEFT)) != 0){
             Roomba_Drive(20,1);
         }else{
             Roomba_Drive(0,0);
         }
     }
+}
+
+void p_jordan_song()
+{
+    for(;;)
+    {
+        Roomba_Music_play_song(0);
+        Task_Next();
+    }
+
+}
+
+void set_songs()
+{
+    // Ocarina of Time - eponas song
+    roomba_music_song_t song;
+    song.song_num = 0;
+    Roomba_Music_add_note(&song,65, 16);
+    Roomba_Music_add_note(&song,69, 16);
+    Roomba_Music_add_note(&song,71, 24);
+    Roomba_Music_add_note(&song,65, 16);
+    Roomba_Music_add_note(&song,69, 16);
+    Roomba_Music_add_note(&song,71, 24);
+    Roomba_Music_add_note(&song,65, 16);
+    Roomba_Music_add_note(&song,69, 16);
+    Roomba_Music_add_note(&song,71, 16);
+    Roomba_Music_add_note(&song,76, 16);
+    Roomba_Music_add_note(&song,74, 24);
+    Roomba_Music_add_note(&song,71, 16);
+    Roomba_Music_add_note(&song,72, 16);
+    Roomba_Music_add_note(&song,71, 16);
+    Roomba_Music_add_note(&song,67, 16);
+    Roomba_Music_add_note(&song,64, 36);
+    Roomba_Music_load_song(&song);
 }
 
 int r_main(void)
@@ -392,6 +427,7 @@ int r_main(void)
 
     jordan_service = Service_Init();
     Task_Create_Periodic(p_jordan,0,20,15,250);
+    Task_Create_Periodic(p_jordan_song,0,2000,15,2000);
     Task_Create_RR(rr_jordan,0);
 
     Task_Terminate();
