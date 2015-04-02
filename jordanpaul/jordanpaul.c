@@ -253,7 +253,7 @@ int r_main(){
 #include "game.h"
 #include "profiler.h"
 #include "trace_uart/trace_uart.h"
-#include "sonar/sonar.h"
+// #include "sonar/sonar.h"
 
 #define LED_PORT      PORTB
 #define LED_DDR       DDRB
@@ -271,7 +271,8 @@ SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
 
 // everyone hard-codes this number when they begin the game
-uint8_t roomba_num = 1;
+uint8_t roomba_num = 2;
+uint8_t ir_count = 0;
 radiopacket_t tx_packet;
 
 // keep track of the our current model
@@ -291,9 +292,6 @@ typedef struct _model_t {
     int16_t vy;
     uint8_t button;
 
-    // control the if the periodic tasks run. 0 for off ,1 for on
-    uint8_t autonomous_flag;
-
     // function pointers to how we want to handle stuff
 } Model_t;
 Model_t model;
@@ -307,7 +305,7 @@ void radio_rxhandler(uint8_t pipenumber) {
 
 // We have been hit. Process the ir hit.
 void ir_rxhandler() {
-    LED_PORT ^= ( 1 << LED_IR_PIN);
+    // LED_PORT ^= ( 1 << LED_IR_PIN);
     int16_t value = IR_getLast();
     if( Game_is_player_id(value) && value != PLAYER_IDS[roomba_num])
     {
@@ -321,7 +319,7 @@ void ir_rxhandler() {
 
 void handleRoombaInput(pf_game_t* game)
 {
-    int16_t x_value = (((game->velocity_x*5)/256) - 2)*250;
+    int16_t x_value = (((game->velocity_x*5)/256) - 2)*40;
     int16_t y_value = (((game->velocity_y*5)/256) - 2)*250;
 
     if( x_value == 0 && y_value == 0){
@@ -331,28 +329,34 @@ void handleRoombaInput(pf_game_t* game)
         Roomba_Drive(y_value,0x8000);
     } else if( y_value == 0){
       // turn in place
-      uint16_t deg = -1;
+      uint16_t deg = 1;
       if( x_value < 0 ){
-        deg = 1;
+        deg = -1;
       }
-      Roomba_Drive(500,deg);
+      Roomba_Drive(250,deg);
     }else{
-      x_value = -x_value;
+      x_value = x_value;
       y_value = -y_value;
       Roomba_Drive(y_value,x_value);
     }
 
     // fire every 5th packet
-    if( game->button ){
-        IR_transmit(model.player_id);
+    ir_count+= 1;
+    if(ir_count == 5){
+        IR_transmit(PLAYER_IDS[roomba_num]);
+        ir_count = 0;
     }
+
+    // if( game->button ){
+    //     IR_transmit(PLAYER_IDS[roomba_num]);
+    // }
 }
 
 void handleStateInput(pf_game_t* game){
     model.old_team = model.team;
     model.old_state = model.team;
-    // model.team = game->game_team;
-    // model.state = game->game_state;
+    model.team = game->game_team;
+    model.state = game->game_state;
 
     if( model.old_team != model.team){
         // we have changed teamd
@@ -362,7 +366,7 @@ void handleStateInput(pf_game_t* game){
             // want to do anything special?
         }else{
             // we went from zombie to human. SHOULD NOT HAPPEN
-            OS_Abort();
+            //OS_Abort();
         }
 
         TEAM_PORT &= ~( 1<< TEAM_HUMAN_PIN);
@@ -377,12 +381,12 @@ void handleStateInput(pf_game_t* game){
             if( model.state == STUNNED && model.old_state == NORMAL)
             {
                 // we have just became stunned, start the autonomous control
-                model.autonomous_flag = 1;
+                // model.autonomous_flag = 1;
             }
             else if( model.state == NORMAL && model.old_state == STUNNED)
             {
                 // no longer stunner, start using input from the user.
-                model.autonomous_flag = 0;
+                // model.autonomous_flag = 0;
             }
         }
     }
@@ -423,7 +427,8 @@ void send_back_packet()
 
     // We send this info back in order to inform the Roomba
     // of what state we think we are in.
-    tx_packet.payload.game.game_player_id = model.player_id;
+    // tx_packet.payload.game.game_player_id = model.player_id;
+    tx_packet.payload.game.game_player_id = PLAYER_IDS[roomba_num];
     tx_packet.payload.game.game_team = model.team;
     tx_packet.payload.game.game_state = model.state;
 
@@ -460,14 +465,14 @@ void rr_roomba_controller() {
 				{
                     // wake up our roomba controller?
 					handleRoombaInput(&packet.payload.game);
-					//handleStateInput(&packet.payload.game);
+					handleStateInput(&packet.payload.game);
 				}
 			}
 
 		} while (result == RADIO_RX_MORE_PACKETS);
 
         // POTENTIAL STRAT, don' send packet back until as late as possible
-		//send_back_packet();
+		send_back_packet();
 	}
 }
 
@@ -537,8 +542,8 @@ void setup_leds()
 void init_model(Model_t* model)
 {
     model->player_id = PLAYER_IDS[roomba_num];
-    model->team = 0;
-    model->state = 0;
+    model->team = HUMAN;
+    model->state = SHIELDED;
     model->last_ir_code= 0;
     model->old_team = 0;
     model->old_state = 0;
@@ -549,7 +554,6 @@ void init_model(Model_t* model)
     model->vy = 0;
     model->button = 0;
 }
-
 
 void Sonar_rxhandler(int16_t distance){
 }
@@ -565,33 +569,46 @@ void sonar_value()
     }
 }
 
+void p_roomba_lifted()
+{
+    Task_Next();
+    roomba_sensor_data data;
+    for(;;){
+        Roomba_UpdateSensorPacket(EXTERNAL,&data);
+
+        if( data )
+
+    }
+}
+
 int r_main(void)
 {
-	// power_cycle_radio();
+	power_cycle_radio();
     setup_leds();
- //    init_model(&model);
+    init_model(&model);
 
 	//Initialize radio.
-	// Radio_Init();
-	// IR_init();
-	// Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
-	// Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
+	Radio_Init();
+	IR_init();
+	Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
+	Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
 
-    // Create the services
-	// radio_receive_service = Service_Init();
-	// ir_receive_service = Service_Init();
+    //Create the services
+	radio_receive_service = Service_Init();
+	ir_receive_service = Service_Init();
 
-    // Create the tasks
-    // Task_Create_RR(rr_roomba_controller,0);
-    // Task_Create_RR(rr_ir_controller,0);
+    //Create the tasks
+    Task_Create_RR(rr_roomba_controller,0);
+    Task_Create_RR(rr_ir_controller,0);
 
     // periodic tasks to control blinking the led + controlling a stunned zombie
     // they will be flag gaurded such that they only run once they are allowed.
-    // Task_Create_Periodic(p_blink_led ,0,10,3,250);
+    Task_Create_Periodic(p_blink_led ,0,10,3,250);
+    Task_Create_Periodic(p_roomba_lifted,0,1000,800,250);
 
-    Sonar_init();
-    trace_uart_init();
-    Task_Create_Periodic(sonar_value,0,20,5,5);
+    // Sonar_init();
+    // trace_uart_init();
+    // Task_Create_Periodic(sonar_value,0,20,5,5);
 
 	Task_Terminate();
 	return 0 ;
