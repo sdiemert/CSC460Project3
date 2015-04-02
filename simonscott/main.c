@@ -2,7 +2,7 @@
 
 SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
-uint8_t roomba_num = 1;
+uint8_t roomba_num = 0;
 uint8_t ir_count = 0;
 
 struct player_state {
@@ -92,6 +92,12 @@ void handleRoombaInput(pf_game_t* game)
 			vx = -1;
 			vy = 300;
 		}
+	}
+
+	// Trollolololololololol
+	if(game->game_team == ZOMBIE && game->game_state == (uint8_t)STUNNED) {
+		vx = 1;
+		vy = 300;		
 	}
 
 	Roomba_Drive(vy,-1*vx);
