@@ -57,6 +57,14 @@ typedef struct
     int8_t   temperature;
     uint16_u charge;
     uint16_u capacity;
+
+    // packet 106 (light bumpers)
+    uint16_u light_left;
+    uint16_u light_front_left;
+    uint16_u light_ceneter_left;
+    uint16_u light_ceneter_right;
+    uint16_u light_front_right;
+    uint16_u light_right;
 } roomba_sensor_data_t;
 
 #endif /* SENSOR_STRUCT_H_ */

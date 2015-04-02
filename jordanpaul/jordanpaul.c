@@ -322,6 +322,9 @@ void handleRoombaInput(pf_game_t* game)
     int16_t x_value = (((game->velocity_x*5)/256) - 2)*40;
     int16_t y_value = (((game->velocity_y*5)/256) - 2)*250;
 
+    // reset into safe mode.
+    Roomba_Send_Byte(SAFE);
+
     if( x_value == 0 && y_value == 0){
         Roomba_Drive(0,0x8000);
     } else if( x_value == 0){
@@ -490,7 +493,6 @@ void rr_ir_controller()
 
 void p_blink_led()
 {
-    uint8_t mask;
     for(;;)
     {
         if( model.team == ZOMBIE){
@@ -558,29 +560,6 @@ void init_model(Model_t* model)
 void Sonar_rxhandler(int16_t distance){
 }
 
-void sonar_value()
-{
-    int16_t dist;
-
-    for(;;){
-        PORTB ^= ( 1 << PB6);
-        Sonar_fire();
-        Task_Next();
-    }
-}
-
-void p_roomba_lifted()
-{
-    Task_Next();
-    roomba_sensor_data data;
-    for(;;){
-        Roomba_UpdateSensorPacket(EXTERNAL,&data);
-
-        if( data )
-
-    }
-}
-
 int r_main(void)
 {
 	power_cycle_radio();
@@ -604,7 +583,6 @@ int r_main(void)
     // periodic tasks to control blinking the led + controlling a stunned zombie
     // they will be flag gaurded such that they only run once they are allowed.
     Task_Create_Periodic(p_blink_led ,0,10,3,250);
-    Task_Create_Periodic(p_roomba_lifted,0,1000,800,250);
 
     // Sonar_init();
     // trace_uart_init();

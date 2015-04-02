@@ -16,6 +16,7 @@ typedef enum _rsg
 	EXTERNAL=1,		// group 1 (bumper/wheeldrops, cliff sensors, virtual wall, motor overcurrents, dirt sensors)
 	CHASSIS=2,		// group 2 (remote, buttons, distance, angle)
 	INTERNAL=3,		// group 3 (charging state; battery voltage, current, charge and capacity; internal temperature)
+    LIGHT_BUMPERS=106    // group 106( light bump left;light bump front left, light bump center left, light bump center right, light bump front right, light bump right)
 } ROOMBA_SENSOR_GROUP;
 
 #define HIGH_BYTE(x) (x>>8)
@@ -63,6 +64,41 @@ void Roomba_Drive( int16_t velocity, int16_t radius );
  *  [139][4][0][128]
  */
 void Roomba_LED(int8_t led_bits,int8_t color, int8_t intensity);
+
+/*
+    Get the current mode of the roomba.
+    0 - OFF
+    1 - PASSIVE
+    2 - SAFE
+    3 - FULL
+*/
+uint8_t Roomba_OI_Mode();
+
+/*
+    request_packets - an array of the opcode in which you want to receive
+        sensor information for. Each byte will be passed into the query_list
+        command.
+    request_len - the length of the request_packet array.
+    output_data - the array in which to return the sensor data values.
+        Received in the order provided by the roomba. therefore we don't
+        handle any high-byte low-byte schenanigans for you.
+    data_len - the number of bytes being expected from the query list.
+*/
+void Roomba_Query_List(int8_t* requested_packet, int8_t request_len,
+                        int8_t* output_data,int8_t data_len);
+
+/*
+    Gets the light bumper detection bit field
+    7   - RESERVED
+    6   - RESERVED
+    5   - Light Bumper Right
+    4   - Light Bumper Front Right
+    3   - Light Bumper Center Right
+    2   - Light Bumper Center Left
+    1   - Light Bumper Front Left
+    0   - Light Bumper Left
+*/
+uint8_t Roomba_LightBumperDetection();
 
 void Roomba_Finish();
 

@@ -92,6 +92,20 @@ void Roomba_UpdateSensorPacket(ROOMBA_SENSOR_GROUP group, roomba_sensor_data_t* 
 		sensor_packet->capacity.bytes.high_byte = uart_get_byte(8);
 		sensor_packet->capacity.bytes.low_byte = uart_get_byte(9);
 		break;
+	case LIGHT_BUMPERS:
+		sensor_packet->light_left.bytes.high_byte = uart_get_byte(0);
+		sensor_packet->light_left.bytes.low_byte = uart_get_byte(1);
+		sensor_packet->light_front_left.bytes.high_byte = uart_get_byte(2);
+		sensor_packet->light_front_left.bytes.low_byte = uart_get_byte(3);
+		sensor_packet->light_center_left.bytes.high_byte = uart_get_byte(4);
+		sensor_packet->light_center_left.bytes.low_byte = uart_get_byte(5);
+		sensor_packet->light_center_right.bytes.high_byte = uart_get_byte(6);
+		sensor_packet->light_center_right.bytes.low_byte = uart_get_byte(7);
+		sensor_packet->light_front_right.bytes.high_byte = uart_get_byte(8);
+		sensor_packet->light_front_right.bytes.low_byte = uart_get_byte(9);
+		sensor_packet->light_right.bytes.high_byte = uart_get_byte(10);
+		sensor_packet->light_right.bytes.low_byte = uart_get_byte(11);
+		break;
 	}
 	uart_reset_receive();
 }
@@ -113,4 +127,47 @@ void Roomba_LED(int8_t led_bits,int8_t color, int8_t intensity)
 	Roomba_Send_Byte(led_bits);
 	Roomba_Send_Byte(color);
 	Roomba_Send_Byte(intensity);
+}
+
+uint8_t Roomba_OI_Mode(){
+    Roomba_Send_Byte(SENSORS);
+    Roomba_Send_Byte(35); // 35 is OI_MODE packet id
+    while( uart_bytes_received() != 1);
+    uint8_t rs = uart_get_byte(0);
+    uart_reset_receive();
+    return rs;
+}
+
+void Roomba_Query_List(int8_t* requested_packets, int8_t request_len,
+                        int8_t* output_data,int8_t data_len)
+{
+    if( requested_packets == 0 || output_data == 0){
+        return;
+    }
+
+    // send down the command
+    Roomba_Send_Byte(149); // Query List Command OPCODE
+    Roomba_Send_Byte(request_len);
+    int i = 0;
+    for(i = 0;i < request_len;++i)
+    {
+        Roomba_Send_Byte(requested_packets[i]);
+    }
+
+    // retrieve the data bytes out of the uart.
+    while(uart_bytes_received() != data_len);
+    for(i = 0; i < data_len; ++i)
+    {
+        output_data[i] = uart_get_byte(i);
+    }
+    uart_reset_receive();
+}
+
+uint8_t Roomba_LightBumperDetection(){
+    Roomba_Send_Byte(SENSORS); // 45 is the Light Bumper Sensor pakcet Id
+    Roomba_Send_Byte(45); // 45 is the Light Bumper Sensor pakcet Id
+    while( uart_bytes_received() != 1);
+    int8_t rs = uart_get_byte(0);
+    uart_reset_receive();
+    return rs;
 }

@@ -85,6 +85,20 @@ typedef enum _br {
 #define CLEAN_BTN		1
 #define MAX_BTN			0
 
+/// Number to determine the current OI mode of the roomba
+#define ROOMBA_MODE_OFF 	0
+#define ROOMBA_MODE_PASSIVE 1
+#define ROOMBA_MODE_SAFE	2
+#define ROOMBA_MODE_FULL	3
+
+/// bit mask for querying the LightBumperDetection field
+#define LIGHT_BUMPER_RIGHT 			5
+#define LIGHT_BUMPER_FRONT_RIGHT	4
+#define LIGHT_BUMPER_CENTER_RIGHT	3
+#define LIGHT_BUMPER_CENTER_LEFT	2
+#define LIGHT_BUMPER_FRONT_LEFT		1
+#define LIGHT_BUMPER_LEFT 			0
+
 /// Values of the charging state byte
 typedef enum _cs
 {
