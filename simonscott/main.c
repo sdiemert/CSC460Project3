@@ -81,8 +81,8 @@ void SendCommandToRoomba(struct roomba_command* cmd){
 
 void handleRoombaInput(pf_game_t* game)
 {
-	int16_t vx = (game->velocity_x/(255/9) - 4)*62;
-	int16_t vy = (game->velocity_y/(255/9) - 4)*-62;
+	int16_t vx = (game->velocity_x/(255/9) - 4)*124;
+	int16_t vy = (game->velocity_y/(255/9) - 4)*-124;
 
 	if(vy == 0){
 		if( vx > 0){
