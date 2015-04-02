@@ -2,7 +2,7 @@
 
 SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
-uint8_t roomba_num = 0;
+uint8_t roomba_num = 1;
 uint8_t ir_count = 0;
 
 struct player_state {
@@ -14,6 +14,27 @@ struct player_state {
 };
 struct player_state player;
 
+void setup_roomba() {
+	Roomba_Init();
+	Radio_Set_Tx_Addr(base_station_address);
+
+	// Initialize pins
+	DDRB |= (1<<PB4);
+	DDRB |= (1<<PB5);
+    DDRB |= (1<<PB6);
+	PORTB &= ~(1<<PB4);
+	PORTB &= ~(1<<PB5);
+    PORTB &= ~(1<<PB6);
+
+	DDRC |= (1 << PC0); //stun/shield indicator (pin 37 on arduino mega)
+	DDRC |= (1 << PC1); //Human Indicator (pin 36 on arduino mega)
+	DDRC |= (1 << PC2); //Zombie indicator (pin 35 on arduino mega)
+
+	PORTC &= ~(1<<PC0);
+	PORTC &= ~(1<<PC1);
+	PORTC &= ~(1<<PC2);
+
+}
 
 void radio_rxhandler(uint8_t pipenumber) {
 	RADIO_PACKET_RX_TOGGLE();
@@ -21,13 +42,12 @@ void radio_rxhandler(uint8_t pipenumber) {
 }
 
 void ir_rxhandler() {
-    IR_RX_TOGGLE();
+    IR_RX_TOGGLE();	
     int16_t value = IR_getLast();
     int i = 0; 
     for(i = 0; i< 4; ++i){
         if( value == PLAYER_IDS[i]){
             if( value != PLAYER_IDS[roomba_num]){
-                PORTB ^= ( 1 << PB6);
                 Service_Publish(ir_receive_service,value);
             }
         }
@@ -61,16 +81,16 @@ void SendCommandToRoomba(struct roomba_command* cmd){
 
 void handleRoombaInput(pf_game_t* game)
 {
-	int16_t vx = (game->velocity_x/(255/9) - 4)*50;
-	int16_t vy = (game->velocity_y/(255/9) - 4)*-50;
+	int16_t vx = (game->velocity_x/(225/9) - 5)*50;
+	int16_t vy = (game->velocity_y/(225/9) - 5)*-50;
 
 	if(vy == 0){
 		if( vx > 0){
 			vx = 1;
-			vy = 200;
+			vy = 500;
 		} else if(vx < 0){
 			vx = -1;
-			vy = 200;
+			vy = 500;
 		}
 	}
 
@@ -87,7 +107,25 @@ void handleRoombaInput(pf_game_t* game)
 void handleStateInput(pf_game_t* game){
     player.team = game->game_team;
     player.state = game->game_state;
-    // do something about LED lights to show zombie or human
+
+	switch(player.team) {
+		case ZOMBIE:
+			ZOMBIE_TEAM_INDICATOR_ON();
+			HUMAN_TEAM_INDICATOR_OFF();
+			break;
+		case HUMAN:
+			HUMAN_TEAM_INDICATOR_ON();
+			ZOMBIE_TEAM_INDICATOR_OFF();
+			break;				
+		default:
+			break;
+	}
+
+	if(player.state == SHIELDED || player.state == NORMAL) {
+		MODIFY_INDICATOR_ON();		
+	} else if(player.state == SHIELDLESS || player.state == STUNNED) {
+		MODIFY_INDICATOR_OFF();
+	}
 }
 
 void send_back_packet()
@@ -117,13 +155,27 @@ void send_back_packet()
     Radio_Transmit(&packet, RADIO_RETURN_ON_TX);
 }
 
+void update_ir_state()
+{
+    int16_t value;
+    for(;;){
+        Service_Subscribe(ir_receive_service,&value);
+        player.last_ir_code = value;
+    }
+}
 
-void rr_roomba_controller() {
-	//Start the Roomba for the first time.
-	Roomba_Init();
+void power_cycle_radio()
+{
+	//Turn off radio power.
+	RADIO_VCC_DDR |= (1 << RADIO_VCC_PIN);
+	RADIO_VCC_PORT &= ~(1<<RADIO_VCC_PIN);
+	_delay_ms(500);
+	RADIO_VCC_PORT |= (1<<RADIO_VCC_PIN);
+	_delay_ms(500);
+}
+
+void update_radio_state() {
 	int16_t value;
-
-	Radio_Set_Tx_Addr(base_station_address);
 
 	for(;;) {
 		Service_Subscribe(radio_receive_service,&value);
@@ -148,50 +200,9 @@ void rr_roomba_controller() {
 	}
 }
 
-void rr_ir_controller()
-{
-    int16_t value;
-    for(;;){
-        Service_Subscribe(ir_receive_service,&value);
-        player.last_ir_code = value;
-    }
-}
-
-#define RADIO_VCC_DDR DDRL
-#define RADIO_VCC_PORT PORTL
-#define RADIO_VCC_PIN PL2
-void power_cycle_radio()
-{
-	//Turn off radio power.
-	RADIO_VCC_DDR |= (1 << RADIO_VCC_PIN);
-	RADIO_VCC_PORT &= ~(1<<RADIO_VCC_PIN);
-	_delay_ms(500);
-	RADIO_VCC_PORT |= (1<<RADIO_VCC_PIN);
-	_delay_ms(500);
-}
-
 int r_main(void)
 {
 	power_cycle_radio();
-
-	DDRB |= (1<<PB4);
-	DDRB |= (1<<PB5);
-    DDRB |= (1<<PB6);
-	PORTB &= ~(1<<PB4);
-	PORTB &= ~(1<<PB5);
-    PORTB &= ~(1<<PB6);
-
-	DDRC |= (1 << PC0); //stun/sheild indicator (pin 37 on arduino mega)
-	DDRC |= (1 << PC1); //Human Indicator (pin 36 on arduino mega)
-	DDRC |= (1 << PC2); //Zombie indicator (pin 35 on arduino mega)
-
-	PORTC &= ~(1<<PC0);
-	PORTC &= ~(1<<PC1);
-	PORTC &= ~(1<<PC2);
-
-	HUMAN_TEAM_INDICATOR_ON();
-	ZOMBIE_TEAM_INDICATOR_ON();
-	ZOMBIE_STUN_INDICATOR_ON();
 
 	//Initialize radio.
 	Radio_Init();
@@ -201,8 +212,11 @@ int r_main(void)
 
 	radio_receive_service = Service_Init();
 	ir_receive_service = Service_Init();
-	Task_Create_RR(rr_roomba_controller,0);
-    Task_Create_RR(rr_ir_controller,0);
+
+	// System tasks
+	Task_Create_System(setup_roomba, 0);
+	Task_Create_RR(update_radio_state, 0);
+	Task_Create_RR(update_ir_state, 0);
 
     player.player_id = PLAYER_IDS[roomba_num];
     player.team = 0;

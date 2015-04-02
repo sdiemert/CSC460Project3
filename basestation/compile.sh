@@ -32,8 +32,10 @@ avr-gcc -Wall -O2 -DF_CPU=16000000UL -mmcu=atmega2560 -c -o mainProg.o $1
 
 avr-gcc -Wall -O2 -DF_CPU=16000000UL -mmcu=atmega2560 -c -o os.o os.c
 
+avr-gcc -Wall -O2 -DF_CPU=16000000UL -mmcu=atmega2560 -c -o uart.o uart/uart.c
+
 echo "Linking..."
-avr-gcc -Wall -O2 -DF_CPU=16000000UL -mmcu=atmega2560 -g -o out.elf joystick.o trace.o spi.o radio.o game.o os.o mainProg.o
+avr-gcc -Wall -O2 -DF_CPU=16000000UL -mmcu=atmega2560 -g -o out.elf uart.o joystick.o trace.o spi.o radio.o game.o os.o mainProg.o
 
 echo "Making ELF..."
 #avr-gcc -Wall -Os -mmcu=atmega2560 -g -o out.elf out.o

@@ -7,6 +7,12 @@
 #include "ir.h"
 #include "game.h"
 
+// Jordan's defines from main.c
+
+#define RADIO_VCC_DDR DDRL
+#define RADIO_VCC_PORT PORTL
+#define RADIO_VCC_PIN PL2
+
 //INDICATOR DEFINITIONS: 
 
 #define MODIFY_INDICATOR PC0 	//Digital I/O pin 37 on arduino mega, 	A8 on ATMega 2560 pinout. 
