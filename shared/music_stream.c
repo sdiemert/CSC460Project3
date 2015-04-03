@@ -42,13 +42,17 @@ uint16_t _load_music(music_stream_t* stream)
     return duration;
 }
 
-// A simple periodic task which all that it does is
-// publish to the music_stream_wait_service and then terminate.
-// The purpose of the task is in order to time a certain duration
-// before waking up the round-robinn _play_music task.
+
+// Periodic task which acts like a timer for the music stream.
+// It will publish to the music_stream_wait_service and then terminate.
+// The purpose of the task is to wait a certain druation of time
+// before waking up the round-robin _play_music task.
 void _p_wait_music_stream()
 {
+    // This single call to Task_Next is necessary in order
+    // to 'skip' the first call to the periodic task.
     Task_Next();
+
     Service_Publish(music_stream_wait_service,0);
     Task_Terminate();
 }
@@ -58,7 +62,6 @@ void _play_music()
     uint16_t duration;
     int16_t value;
     for(;;){
-        PORTB |= (1 << PB6);
 
         // poll the roomba to see if the last song has finished playing
         if(Roomba_Music_is_song_playing() == 0){
@@ -73,6 +76,7 @@ void _play_music()
                     // Create a periodic task which will wake up this task once the
                     // specified duration has passed. We do this so that we aren't just
                     // constantly polling the Roomba to see if the song is still playing.
+                    // TODO: Bug, we need to pass ticks into the function not milliseconds
                     Task_Create_Periodic(_p_wait_music_stream,0,duration-6,50,Now() + 1);
 					Service_Subscribe(music_stream_wait_service,&value);
                 }
@@ -84,7 +88,7 @@ void _play_music()
                 Task_Terminate();
             }
         }
-        PORTB &= (1 << PB6);
+
         Task_Next();
     }
 }
@@ -119,6 +123,39 @@ void Music_Stream_add_note(uint8_t note, uint8_t duration)
 {
     if( music_stream.len >= MUSIC_STREAM_LEN){return;}
     music_stream.notes[music_stream.len][0] = note;
+    music_stream.notes[music_stream.len][1] = duration;
+    music_stream.len += 1;
+}
+
+static uint16_t _strlen(const char* node){
+    uint16_t rs = 0;
+    while(*(node + rs) != '\0'){rs += 1;}
+    return rs;
+}
+
+// Add a note into the music stream.
+void Music_Stream_add_note_char(const char* note, uint8_t duration)
+{
+    if( music_stream.len >= MUSIC_STREAM_LEN){return;}
+
+    // convert the note in string representation into the
+    // the note number.
+    uint16_t len = _strlen(note);
+    uint8_t octave = (len == 2) ? note[1] - '0': note[2] -'0';
+    uint8_t note_index = 0;
+    switch(note[0]){
+        case('c'): note_index = (len == 2) ? 0 : 1; break;
+        case('d'): note_index = (len == 2) ? 2 : 3; break;
+        case('e'): note_index = 4;break;
+        case('f'): note_index = (len == 2) ? 5 : 6; break;
+        case('g'): note_index = (len == 2) ? 7 : 8; break;
+        case('a'): note_index = (len == 2) ? 9 : 10; break;
+        case('b'): note_index = 11;break;
+        case('r'): note_index = -(octave+1)*12; break; // rest note
+    }
+    uint8_t note_num = note_index + (octave + 1)*12;
+
+    music_stream.notes[music_stream.len][0] = note_num;
     music_stream.notes[music_stream.len][1] = duration;
     music_stream.len += 1;
 }
