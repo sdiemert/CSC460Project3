@@ -15,7 +15,6 @@ typedef struct _roomba_music_song_t {
     uint8_t notes[ROOMBA_MUSIC_MAX_SONG_LEN][2];
 } roomba_music_song_t;
 
-
 /*
     Add the following note with the given duration into the song struct.
     If it can't add anymore notes then it fails silently.

@@ -10,6 +10,7 @@
 #include "trace_uart/trace_uart.h"
 // #include "sonar/sonar.h"
 #include "roomba/roomba_music.h"
+#include "music_stream.h"
 
 #define LED_PORT      PORTB
 #define LED_DDR       DDRB
@@ -348,69 +349,49 @@ void Sonar_rxhandler(int16_t distance){
 // 	return 0 ;
 // }
 
-SERVICE* jordan_service;
+void load_music_stream(){
+    Music_Stream_init();
+    Music_Stream_add_note(65, 16);
+    Music_Stream_add_note(69, 16);
+    Music_Stream_add_note(71, 24);
+    Music_Stream_add_note(65, 16);
+    Music_Stream_add_note(69, 16);
+    Music_Stream_add_note(71, 24);
+    Music_Stream_add_note(65, 16);
+    Music_Stream_add_note(69, 16);
+    Music_Stream_add_note(71, 16);
+    Music_Stream_add_note(76, 16);
+    Music_Stream_add_note(74, 24);
+    Music_Stream_add_note(71, 16);
+    Music_Stream_add_note(72, 16);
+    Music_Stream_add_note(71, 16);
+    Music_Stream_add_note(67, 16);
+    Music_Stream_add_note(64, 36);
+    Music_Stream_add_note(65, 16);
+    Music_Stream_add_note(69, 16);
+    Music_Stream_add_note(71, 24);
+    Music_Stream_add_note(65, 16);
+    Music_Stream_add_note(69, 16);
+    Music_Stream_add_note(71, 24);
+    Music_Stream_add_note(65, 16);
+    Music_Stream_add_note(69, 16);
+    Music_Stream_add_note(71, 16);
+    Music_Stream_add_note(76, 16);
+    Music_Stream_add_note(74, 24);
+    Music_Stream_add_note(71, 16);
+    Music_Stream_add_note(72, 16);
+    Music_Stream_add_note(71, 16);
+    Music_Stream_add_note(67, 16);
+    Music_Stream_add_note(64, 36);
+}
+
 void p_jordan()
 {
     for(;;)
     {
-        PORTB ^= ( 1 << PB5);
-        Service_Publish(jordan_service,0);
+        Music_Stream_play();
         Task_Next();
     }
-}
-
-void rr_jordan()
-{
-    roomba_sensor_data_t data;
-    int16_t value;
-    for(;;)
-    {
-        Service_Subscribe(jordan_service,&value);
-        PORTB ^= ( 1 << PB6);
-
-        Roomba_UpdateSensorPacket(EXTERNAL,&data);
-        if( (data.bumps_wheeldrops & (1 << BUMP_RIGHT )) != 0){
-            Roomba_Drive(20,-1);
-        }else if( (data.bumps_wheeldrops & ( 1 << BUMP_LEFT)) != 0){
-            Roomba_Drive(20,1);
-        }else{
-            Roomba_Drive(0,0);
-        }
-    }
-}
-
-void p_jordan_song()
-{
-    for(;;)
-    {
-        Roomba_Music_play_song(0);
-        Task_Next();
-    }
-
-}
-
-void set_songs()
-{
-    // Ocarina of Time - eponas song
-    roomba_music_song_t song;
-    song.song_num = 0;
-    Roomba_Music_add_note(&song,65, 16);
-    Roomba_Music_add_note(&song,69, 16);
-    Roomba_Music_add_note(&song,71, 24);
-    Roomba_Music_add_note(&song,65, 16);
-    Roomba_Music_add_note(&song,69, 16);
-    Roomba_Music_add_note(&song,71, 24);
-    Roomba_Music_add_note(&song,65, 16);
-    Roomba_Music_add_note(&song,69, 16);
-    Roomba_Music_add_note(&song,71, 16);
-    Roomba_Music_add_note(&song,76, 16);
-    Roomba_Music_add_note(&song,74, 24);
-    Roomba_Music_add_note(&song,71, 16);
-    Roomba_Music_add_note(&song,72, 16);
-    Roomba_Music_add_note(&song,71, 16);
-    Roomba_Music_add_note(&song,67, 16);
-    Roomba_Music_add_note(&song,64, 36);
-    Roomba_Music_load_song(&song);
 }
 
 int r_main(void)
@@ -425,10 +406,13 @@ int r_main(void)
     Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
     Roomba_Init();
 
-    jordan_service = Service_Init();
-    Task_Create_Periodic(p_jordan,0,20,15,250);
-    Task_Create_Periodic(p_jordan_song,0,2000,15,2000);
-    Task_Create_RR(rr_jordan,0);
+    load_music_stream();
+    Task_Create_Periodic(p_jordan,0,4000,1500,4000);
+
+    //jordan_service = Service_Init();
+    //Task_Create_Periodic(p_jordan,0,20,15,250);
+    //Task_Create_Periodic(p_jordan_song,0,2000,15,2000);
+    //Task_Create_RR(rr_jordan,0);
 
     Task_Terminate();
     return 0 ;
