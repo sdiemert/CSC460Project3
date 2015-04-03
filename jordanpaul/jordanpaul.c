@@ -367,22 +367,23 @@ void load_music_stream(){
     Music_Stream_add_note(71, 16);
     Music_Stream_add_note(67, 16);
     Music_Stream_add_note(64, 36);
+
     Music_Stream_add_note(65, 16);
     Music_Stream_add_note(69, 16);
     Music_Stream_add_note(71, 24);
     Music_Stream_add_note(65, 16);
     Music_Stream_add_note(69, 16);
     Music_Stream_add_note(71, 24);
-    Music_Stream_add_note(65, 16);
-    Music_Stream_add_note(69, 16);
-    Music_Stream_add_note(71, 16);
-    Music_Stream_add_note(76, 16);
-    Music_Stream_add_note(74, 24);
-    Music_Stream_add_note(71, 16);
-    Music_Stream_add_note(72, 16);
-    Music_Stream_add_note(71, 16);
-    Music_Stream_add_note(67, 16);
-    Music_Stream_add_note(64, 36);
+    // Music_Stream_add_note(65, 16);
+    // Music_Stream_add_note(69, 16);
+    // Music_Stream_add_note(71, 16);
+    // Music_Stream_add_note(76, 16);
+    // Music_Stream_add_note(74, 24);
+    // Music_Stream_add_note(71, 16);
+    // Music_Stream_add_note(72, 16);
+    // Music_Stream_add_note(71, 16);
+    // Music_Stream_add_note(67, 16);
+    // Music_Stream_add_note(64, 36);
 }
 
 void p_jordan()
@@ -396,6 +397,7 @@ void p_jordan()
 
 int r_main(void)
 {
+    InitializeLogicAnalyzerProfiler();
     power_cycle_radio();
     setup_leds();
     init_model(&model);
@@ -407,7 +409,9 @@ int r_main(void)
     Roomba_Init();
 
     load_music_stream();
-    Task_Create_Periodic(p_jordan,0,4000,1500,4000);
+    Task_Create_Periodic(p_jordan,0,3000,1500,1000);
+    // EnableProfileSample1();
+    // DisableProfileSample1();
 
     //jordan_service = Service_Init();
     //Task_Create_Periodic(p_jordan,0,20,15,250);
