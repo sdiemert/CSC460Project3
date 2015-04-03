@@ -1,12 +1,10 @@
 #include <avr/io.h>
 #include <util/delay.h>
-#include "rtos/os.h" // Task_Create_RR
+#include "rtos/os.h" // Task_Create_RR,Task_Create_Periodic, Service_Init
 #include "roomba/roomba.h"
 #include "roomba/roomba_sci.h"
 #include "roomba/roomba_music.h"
 #include "music_stream.h"
-#include "profiler.h"
-#include "trace_uart/trace_uart.h"
 
 static music_stream_t music_stream;
 static SERVICE* music_stream_wait_service = 0;
@@ -14,7 +12,6 @@ static SERVICE* music_stream_wait_service = 0;
 static uint16_t _load_music(music_stream_t* music_stream);
 static void _p_wait_music_stream();
 static void _play_music();
-static char str[30];
 
 // returns the duration of the song uploaded into the board.
 uint16_t _load_music(music_stream_t* stream)
@@ -35,8 +32,6 @@ uint16_t _load_music(music_stream_t* stream)
 
     // retrieve the duration of the music
     uint16_t duration = Roomba_Music_get_duration_of_song(&song);
-    sprintf(str,"%d\n",duration);
-    trace_uart_putstr(str);
 
     // load the song into roomba memory and then play the song
     // note that we are hard-coded to always using song number 0
@@ -76,7 +71,6 @@ void _play_music()
                 duration = _load_music(&music_stream);
 
                 if( duration > 30){
-                    Profile1();
                     // -6 TICKS = 30ms
                     // Create a periodic task which will wake up this task once the
                     // specified duration has passed. We do this so that we aren't just
@@ -84,7 +78,6 @@ void _play_music()
                     // TODO: Bug, we need to pass ticks into the function not milliseconds
                     Task_Create_Periodic(_p_wait_music_stream,0,duration/5-6,50,(Now() + 5)/5);
 					Service_Subscribe(music_stream_wait_service,&value);
-                    Profile2();
                 }
 
             }else{
@@ -107,9 +100,9 @@ void _play_music()
 
 void Music_Stream_init()
 {
-    if( music_stream_wait_service == 0){
-        music_stream_wait_service = Service_Init();
-    }
+    // if( music_stream_wait_service == 0){
+    //     music_stream_wait_service = Service_Init();
+    // }
 
     music_stream.len = 0;
     music_stream.current_note = 0;
@@ -120,7 +113,7 @@ void Music_Stream_init()
 void Music_Stream_play()
 {
     if(music_stream.is_playing){return;}
-    Task_Create_RR(_play_music,0);
+    //Task_Create_RR(_play_music,0);
 }
 
 

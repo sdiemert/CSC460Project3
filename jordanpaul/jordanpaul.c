@@ -3,14 +3,15 @@
 #include "radio/radio.h"
 #include "roomba/roomba.h"
 #include "roomba/roomba_sci.h"
+#include "roomba/roomba_led_sci.h"
 #include "uart/uart.h"
 #include "ir/ir.h"
 #include "game.h"
 #include "profiler.h"
 #include "trace_uart/trace_uart.h"
 // #include "sonar/sonar.h"
-#include "roomba/roomba_music.h"
-#include "music_stream.h"
+// #include "roomba/roomba_music.h"
+// #include "music_stream.h"
 
 #define LED_PORT      PORTB
 #define LED_DDR       DDRB
@@ -28,7 +29,7 @@ SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
 
 // everyone hard-codes this number when they begin the game
-uint8_t roomba_num = 2;
+uint8_t roomba_num = 1;
 uint8_t ir_count = 0;
 radiopacket_t tx_packet;
 
@@ -209,6 +210,12 @@ void rr_roomba_controller() {
 	Roomba_Init();
     Radio_Set_Tx_Addr(base_station_address);
 
+    Roomba_led_debris(1);
+    Roomba_led_spot(1);
+    Roomba_led_warn(1);
+    Roomba_led_dock(1);
+    Roomba_led_main_led(255,255);
+
 	int16_t value;
     RADIO_RX_STATUS result;
     radiopacket_t packet;
@@ -224,8 +231,8 @@ void rr_roomba_controller() {
 				if( packet.type == GAME)
 				{
                     // wake up our roomba controller?
-					handleRoombaInput(&packet.payload.game);
-					handleStateInput(&packet.payload.game);
+					//handleRoombaInput(&packet.payload.game);
+					//handleStateInput(&packet.payload.game);
 				}
 			}
 
@@ -252,6 +259,8 @@ void p_blink_led()
 {
     for(;;)
     {
+
+        //LED_PORT ^= ( 1<< LED_RX_PIN);
         if( model.team == ZOMBIE){
             if( model.state == NORMAL){
                 TEAM_PORT |= (1<< TEAM_ZOMBIE_PIN);
@@ -317,39 +326,39 @@ void init_model(Model_t* model)
 void Sonar_rxhandler(int16_t distance){
 }
 
-// int r_main(void)
-// {
-// 	power_cycle_radio();
-//     setup_leds();
-//     init_model(&model);
+int r_main(void)
+{
+	power_cycle_radio();
+    setup_leds();
+    init_model(&model);
 
-// 	//Initialize radio.
-// 	Radio_Init();
-// 	IR_init();
-// 	Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
-// 	Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
+	//Initialize radio.
+	Radio_Init();
+	IR_init();
+	Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
+	Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
 
-//     //Create the services
-// 	radio_receive_service = Service_Init();
-// 	ir_receive_service = Service_Init();
+    //Create the services
+	radio_receive_service = Service_Init();
+	ir_receive_service = Service_Init();
 
-//     //Create the tasks
-//     Task_Create_RR(rr_roomba_controller,0);
-//     Task_Create_RR(rr_ir_controller,0);
+    //Create the tasks
+    Task_Create_RR(rr_roomba_controller,0);
+    Task_Create_RR(rr_ir_controller,0);
 
-//     // periodic tasks to control blinking the led + controlling a stunned zombie
-//     // they will be flag gaurded such that they only run once they are allowed.
-//     Task_Create_Periodic(p_blink_led ,0,10,3,250);
+    // periodic tasks to control blinking the led + controlling a stunned zombie
+    // they will be flag gaurded such that they only run once they are allowed.
+    Task_Create_Periodic(p_blink_led ,0,10,3,250);
 
-//     // Sonar_init();
-//     // trace_uart_init();
-//     // Task_Create_Periodic(sonar_value,0,20,5,5);
+    // Sonar_init();
+    // trace_uart_init();
+    // Task_Create_Periodic(sonar_value,0,20,5,5);
 
-// 	Task_Terminate();
-// 	return 0 ;
-// }
+	Task_Terminate();
+	return 0 ;
+}
 
-void load_music_stream(){
+//void load_music_stream(){
     // eponas song.
     // Music_Stream_init();
     // Music_Stream_add_note(65, 16);
@@ -370,91 +379,57 @@ void load_music_stream(){
     // Music_Stream_add_note(64, 36);
 
     //
-    Music_Stream_init();
-    Music_Stream_add_note_char("g2",24);
-    Music_Stream_add_note_char("a2",24);
-    Music_Stream_add_note_char("b2",24);
-    Music_Stream_add_note_char("c#3",24);
-    Music_Stream_add_note_char("g2",24);
-    Music_Stream_add_note_char("a2",24);
-    Music_Stream_add_note_char("b2",24);
-    Music_Stream_add_note_char("c#3",24);
-    Music_Stream_add_note_char("g#2",22);
-    Music_Stream_add_note_char("a#2",22);
-    Music_Stream_add_note_char("c3",22);
-    Music_Stream_add_note_char("d3",22);
-    Music_Stream_add_note_char("g#2",22);
-    Music_Stream_add_note_char("a#2",22);
-    Music_Stream_add_note_char("c3",22);
-    Music_Stream_add_note_char("d3",22);
-    Music_Stream_add_note_char("a2",18);
-    Music_Stream_add_note_char("b2",18);
-    Music_Stream_add_note_char("c#3",18);
-    Music_Stream_add_note_char("d#3",18);
-    Music_Stream_add_note_char("a2",18);
-    Music_Stream_add_note_char("b2",18);
-    Music_Stream_add_note_char("c#3",18);
-    Music_Stream_add_note_char("d#3",18);
-    Music_Stream_add_note_char("a#2",14);
-    Music_Stream_add_note_char("c3",14);
-    Music_Stream_add_note_char("d3",14);
-    Music_Stream_add_note_char("e3",14);
-    Music_Stream_add_note_char("a#2",14);
-    Music_Stream_add_note_char("c3",14);
-    Music_Stream_add_note_char("d3",14);
-    Music_Stream_add_note_char("e3",14);
-    Music_Stream_add_note_char("b2",12);
-    Music_Stream_add_note_char("c#3",12);
-    Music_Stream_add_note_char("d#3",12);
-    Music_Stream_add_note_char("f3",12);
-    Music_Stream_add_note_char("c3",10);
-    Music_Stream_add_note_char("d3",10);
-    Music_Stream_add_note_char("e3",10);
-    Music_Stream_add_note_char("f#3",10);
-    Music_Stream_add_note_char("c#3",8);
-    Music_Stream_add_note_char("d#3",8);
-    Music_Stream_add_note_char("f3",8);
-    Music_Stream_add_note_char("g3",8);
-    Music_Stream_add_note_char("d3",6);
-    Music_Stream_add_note_char("e3",6);
-    Music_Stream_add_note_char("f#3",6);
-    Music_Stream_add_note_char("g#3",6);
-    Music_Stream_add_note_char("a4",26);
-    Music_Stream_add_note_char("a#4",26);
-    Music_Stream_add_note_char("b4",26);
-    Music_Stream_add_note_char("c5",128);
-}
-
-void p_jordan()
-{
-    for(;;)
-    {
-        Music_Stream_play();
-        Task_Next();
-    }
-}
-
-int r_main(void)
-{
-    InitializeLogicAnalyzerProfiler();
-    power_cycle_radio();
-    setup_leds();
-    init_model(&model);
-
-    Radio_Init();
-    IR_init();
-    Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
-    Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
-    Roomba_Init();
-
-    load_music_stream();
-    Task_Create_Periodic(p_jordan,0,5000,1500,1000);
-
-    //jordan_service = Service_Init();
-    //Task_Create_Periodic(p_jordan,0,20,15,250);
-    //Task_Create_Periodic(p_jordan_song,0,2000,15,2000);
-    //Task_Create_RR(rr_jordan,0);
-
-    Task_Terminate();
-    return 0 ;
-}
+    // Music_Stream_init();
+    // Music_Stream_add_note_char("g2",24);
+    // Music_Stream_add_note_char("a2",24);
+    // Music_Stream_add_note_char("b2",24);
+    // Music_Stream_add_note_char("c#3",24);
+    // Music_Stream_add_note_char("g2",24);
+    // Music_Stream_add_note_char("a2",24);
+    // Music_Stream_add_note_char("b2",24);
+    // Music_Stream_add_note_char("c#3",24);
+    // Music_Stream_add_note_char("g#2",22);
+    // Music_Stream_add_note_char("a#2",22);
+    // Music_Stream_add_note_char("c3",22);
+    // Music_Stream_add_note_char("d3",22);
+    // Music_Stream_add_note_char("g#2",22);
+    // Music_Stream_add_note_char("a#2",22);
+    // Music_Stream_add_note_char("c3",22);
+    // Music_Stream_add_note_char("d3",22);
+    // Music_Stream_add_note_char("a2",18);
+    // Music_Stream_add_note_char("b2",18);
+    // Music_Stream_add_note_char("c#3",18);
+    // Music_Stream_add_note_char("d#3",18);
+    // Music_Stream_add_note_char("a2",18);
+    // Music_Stream_add_note_char("b2",18);
+    // Music_Stream_add_note_char("c#3",18);
+    // Music_Stream_add_note_char("d#3",18);
+    // Music_Stream_add_note_char("a#2",14);
+    // Music_Stream_add_note_char("c3",14);
+    // Music_Stream_add_note_char("d3",14);
+    // Music_Stream_add_note_char("e3",14);
+    // Music_Stream_add_note_char("a#2",14);
+    // Music_Stream_add_note_char("c3",14);
+    // Music_Stream_add_note_char("d3",14);
+    // Music_Stream_add_note_char("e3",14);
+    // Music_Stream_add_note_char("b2",12);
+    // Music_Stream_add_note_char("c#3",12);
+    // Music_Stream_add_note_char("d#3",12);
+    // Music_Stream_add_note_char("f3",12);
+    // Music_Stream_add_note_char("c3",10);
+    // Music_Stream_add_note_char("d3",10);
+    // Music_Stream_add_note_char("e3",10);
+    // Music_Stream_add_note_char("f#3",10);
+    // Music_Stream_add_note_char("c#3",8);
+    // Music_Stream_add_note_char("d#3",8);
+    // Music_Stream_add_note_char("f3",8);
+    // Music_Stream_add_note_char("g3",8);
+    // Music_Stream_add_note_char("d3",6);
+    // Music_Stream_add_note_char("e3",6);
+    // Music_Stream_add_note_char("f#3",6);
+    // Music_Stream_add_note_char("g#3",6);
+    // Music_Stream_add_note_char("a4",26);
+    // Music_Stream_add_note_char("a#4",26);
+    // Music_Stream_add_note_char("b4",26);
+    // Music_Stream_add_note_char("c5",128);
+//}

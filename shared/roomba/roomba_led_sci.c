@@ -11,7 +11,6 @@ static void _set_bits(int on,int8_t type){
         _led_bits |= (1<<type);
     }else{
         _led_bits &= ~(1<<type);
-
     }
 }
 
