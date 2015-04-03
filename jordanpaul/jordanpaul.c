@@ -448,9 +448,7 @@ int r_main(void)
     Roomba_Init();
 
     load_music_stream();
-    Task_Create_Periodic(p_jordan,0,3000,1500,1000);
-    // EnableProfileSample1();
-    // DisableProfileSample1();
+    Task_Create_Periodic(p_jordan,0,5000,1500,1000);
 
     //jordan_service = Service_Init();
     //Task_Create_Periodic(p_jordan,0,20,15,250);

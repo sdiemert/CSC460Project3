@@ -18,7 +18,8 @@ uint16_t Roomba_Music_get_duration_of_song(roomba_music_song_t* song)
     for(i = 0;i < song->len; ++i){
         song_len += song->notes[i][1];
     }
-    return (song_len*64)/1000;
+    // return (song_len*64)/1000;
+    return ((song_len*100)/64)*10;
 }
 
 /*
