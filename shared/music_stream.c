@@ -1,16 +1,17 @@
 #include <avr/io.h>
 #include <util/delay.h>
+#include "music_stream.h"
+
 #include "rtos/os.h" // Task_Create_RR,Task_Create_Periodic, Service_Init
 #include "roomba/roomba.h"
 #include "roomba/roomba_sci.h"
 #include "roomba/roomba_music.h"
-#include "music_stream.h"
+#include "rtos/timer.h"
+
 
 static music_stream_t music_stream;
-static SERVICE* music_stream_wait_service = 0;
-
+static volatile OS_TIMER music_stream_timer;
 static uint16_t _load_music(music_stream_t* music_stream);
-static void _p_wait_music_stream();
 static void _play_music();
 
 // returns the duration of the song uploaded into the board.
@@ -42,24 +43,9 @@ uint16_t _load_music(music_stream_t* stream)
 }
 
 
-// Periodic task which acts like a timer for the music stream.
-// It will publish to the music_stream_wait_service and then terminate.
-// The purpose of the task is to wait a certain druation of time
-// before waking up the round-robin _play_music task.
-void _p_wait_music_stream()
-{
-    // This single call to Task_Next is necessary in order
-    // to 'skip' the first call to the periodic task.
-    Task_Next();
-
-    Service_Publish(music_stream_wait_service,0);
-    Task_Terminate();
-}
-
 void _play_music()
 {
     uint16_t duration;
-    int16_t value;
     for(;;){
 
         // poll the roomba to see if the last song has finished playing
@@ -70,23 +56,30 @@ void _play_music()
                 // If we have more notes to play, then load them into the roomba
                 duration = _load_music(&music_stream);
 
-                if( duration > 30){
-                    // -6 TICKS = 30ms
-                    // Create a periodic task which will wake up this task once the
-                    // specified duration has passed. We do this so that we aren't just
-                    // constantly polling the Roomba to see if the song is still playing.
-                    // TODO: Bug, we need to pass ticks into the function not milliseconds
-                    Task_Create_Periodic(_p_wait_music_stream,0,duration/5-6,50,(Now() + 5)/5);
-					Service_Subscribe(music_stream_wait_service,&value);
+                if( duration > 15){
+                    duration -= 15;
+                    // don't bother if we onliy have to wait 15ms
+                    timer_reset(&music_stream_timer);
+                    timer_resume(&music_stream_timer);
+
+                    // wait a certain duration before polling the roomba again
+                    while(timer_value(&music_stream_timer) < duration){
+                        // continue to yield until the specified amount of time
+                        // has pased.
+                        Task_Next();
+                    }
+                    duration = 0;
                 }
 
             }else{
                 // Reset the music stream. We are done now.
                 music_stream.current_note = 0;
                 music_stream.is_playing = 0;
+                PORTC ^= ( 1 << PC5);
                 Task_Terminate();
             }
         }
+
 
         Task_Next();
     }
@@ -100,10 +93,6 @@ void _play_music()
 
 void Music_Stream_init()
 {
-    // if( music_stream_wait_service == 0){
-    //     music_stream_wait_service = Service_Init();
-    // }
-
     music_stream.len = 0;
     music_stream.current_note = 0;
     music_stream.is_playing = 0;
@@ -113,7 +102,7 @@ void Music_Stream_init()
 void Music_Stream_play()
 {
     if(music_stream.is_playing){return;}
-    //Task_Create_RR(_play_music,0);
+    Task_Create_RR(_play_music,0);
 }
 
 

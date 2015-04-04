@@ -11,7 +11,7 @@
 #include "trace_uart/trace_uart.h"
 // #include "sonar/sonar.h"
 // #include "roomba/roomba_music.h"
-// #include "music_stream.h"
+#include "music_stream.h"
 
 #define LED_PORT      PORTB
 #define LED_DDR       DDRB
@@ -29,7 +29,7 @@ SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
 
 // everyone hard-codes this number when they begin the game
-uint8_t roomba_num = 1;
+uint8_t roomba_num = 0;
 uint8_t ir_count = 0;
 radiopacket_t tx_packet;
 
@@ -231,8 +231,8 @@ void rr_roomba_controller() {
 				if( packet.type == GAME)
 				{
                     // wake up our roomba controller?
-					//handleRoombaInput(&packet.payload.game);
-					//handleStateInput(&packet.payload.game);
+					handleRoombaInput(&packet.payload.game);
+					handleStateInput(&packet.payload.game);
 				}
 			}
 
@@ -326,39 +326,7 @@ void init_model(Model_t* model)
 void Sonar_rxhandler(int16_t distance){
 }
 
-int r_main(void)
-{
-	power_cycle_radio();
-    setup_leds();
-    init_model(&model);
-
-	//Initialize radio.
-	Radio_Init();
-	IR_init();
-	Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
-	Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
-
-    //Create the services
-	radio_receive_service = Service_Init();
-	ir_receive_service = Service_Init();
-
-    //Create the tasks
-    Task_Create_RR(rr_roomba_controller,0);
-    Task_Create_RR(rr_ir_controller,0);
-
-    // periodic tasks to control blinking the led + controlling a stunned zombie
-    // they will be flag gaurded such that they only run once they are allowed.
-    Task_Create_Periodic(p_blink_led ,0,10,3,250);
-
-    // Sonar_init();
-    // trace_uart_init();
-    // Task_Create_Periodic(sonar_value,0,20,5,5);
-
-	Task_Terminate();
-	return 0 ;
-}
-
-//void load_music_stream(){
+void load_music_stream(){
     // eponas song.
     // Music_Stream_init();
     // Music_Stream_add_note(65, 16);
@@ -378,58 +346,97 @@ int r_main(void)
     // Music_Stream_add_note(67, 16);
     // Music_Stream_add_note(64, 36);
 
-    //
-    // Music_Stream_init();
-    // Music_Stream_add_note_char("g2",24);
-    // Music_Stream_add_note_char("a2",24);
-    // Music_Stream_add_note_char("b2",24);
-    // Music_Stream_add_note_char("c#3",24);
-    // Music_Stream_add_note_char("g2",24);
-    // Music_Stream_add_note_char("a2",24);
-    // Music_Stream_add_note_char("b2",24);
-    // Music_Stream_add_note_char("c#3",24);
-    // Music_Stream_add_note_char("g#2",22);
-    // Music_Stream_add_note_char("a#2",22);
-    // Music_Stream_add_note_char("c3",22);
-    // Music_Stream_add_note_char("d3",22);
-    // Music_Stream_add_note_char("g#2",22);
-    // Music_Stream_add_note_char("a#2",22);
-    // Music_Stream_add_note_char("c3",22);
-    // Music_Stream_add_note_char("d3",22);
-    // Music_Stream_add_note_char("a2",18);
-    // Music_Stream_add_note_char("b2",18);
-    // Music_Stream_add_note_char("c#3",18);
-    // Music_Stream_add_note_char("d#3",18);
-    // Music_Stream_add_note_char("a2",18);
-    // Music_Stream_add_note_char("b2",18);
-    // Music_Stream_add_note_char("c#3",18);
-    // Music_Stream_add_note_char("d#3",18);
-    // Music_Stream_add_note_char("a#2",14);
-    // Music_Stream_add_note_char("c3",14);
-    // Music_Stream_add_note_char("d3",14);
-    // Music_Stream_add_note_char("e3",14);
-    // Music_Stream_add_note_char("a#2",14);
-    // Music_Stream_add_note_char("c3",14);
-    // Music_Stream_add_note_char("d3",14);
-    // Music_Stream_add_note_char("e3",14);
-    // Music_Stream_add_note_char("b2",12);
-    // Music_Stream_add_note_char("c#3",12);
-    // Music_Stream_add_note_char("d#3",12);
-    // Music_Stream_add_note_char("f3",12);
-    // Music_Stream_add_note_char("c3",10);
-    // Music_Stream_add_note_char("d3",10);
-    // Music_Stream_add_note_char("e3",10);
-    // Music_Stream_add_note_char("f#3",10);
-    // Music_Stream_add_note_char("c#3",8);
-    // Music_Stream_add_note_char("d#3",8);
-    // Music_Stream_add_note_char("f3",8);
-    // Music_Stream_add_note_char("g3",8);
-    // Music_Stream_add_note_char("d3",6);
-    // Music_Stream_add_note_char("e3",6);
-    // Music_Stream_add_note_char("f#3",6);
-    // Music_Stream_add_note_char("g#3",6);
-    // Music_Stream_add_note_char("a4",26);
-    // Music_Stream_add_note_char("a#4",26);
-    // Music_Stream_add_note_char("b4",26);
-    // Music_Stream_add_note_char("c5",128);
-//}
+    Music_Stream_init();
+    Music_Stream_add_note_char("g2",24);
+    Music_Stream_add_note_char("a2",24);
+    Music_Stream_add_note_char("b2",24);
+    Music_Stream_add_note_char("c#3",24);
+    Music_Stream_add_note_char("g2",24);
+    Music_Stream_add_note_char("a2",24);
+    Music_Stream_add_note_char("b2",24);
+    Music_Stream_add_note_char("c#3",24);
+    Music_Stream_add_note_char("g#2",22);
+    Music_Stream_add_note_char("a#2",22);
+    Music_Stream_add_note_char("c3",22);
+    Music_Stream_add_note_char("d3",22);
+    Music_Stream_add_note_char("g#2",22);
+    Music_Stream_add_note_char("a#2",22);
+    Music_Stream_add_note_char("c3",22);
+    Music_Stream_add_note_char("d3",22);
+    Music_Stream_add_note_char("a2",18);
+    Music_Stream_add_note_char("b2",18);
+    Music_Stream_add_note_char("c#3",18);
+    Music_Stream_add_note_char("d#3",18);
+    Music_Stream_add_note_char("a2",18);
+    Music_Stream_add_note_char("b2",18);
+    Music_Stream_add_note_char("c#3",18);
+    Music_Stream_add_note_char("d#3",18);
+    Music_Stream_add_note_char("a#2",14);
+    Music_Stream_add_note_char("c3",14);
+    Music_Stream_add_note_char("d3",14);
+    Music_Stream_add_note_char("e3",14);
+    Music_Stream_add_note_char("a#2",14);
+    Music_Stream_add_note_char("c3",14);
+    Music_Stream_add_note_char("d3",14);
+    Music_Stream_add_note_char("e3",14);
+    Music_Stream_add_note_char("b2",12);
+    Music_Stream_add_note_char("c#3",12);
+    Music_Stream_add_note_char("d#3",12);
+    Music_Stream_add_note_char("f3",12);
+    Music_Stream_add_note_char("c3",10);
+    Music_Stream_add_note_char("d3",10);
+    Music_Stream_add_note_char("e3",10);
+    Music_Stream_add_note_char("f#3",10);
+    Music_Stream_add_note_char("c#3",8);
+    Music_Stream_add_note_char("d#3",8);
+    Music_Stream_add_note_char("f3",8);
+    Music_Stream_add_note_char("g3",8);
+    Music_Stream_add_note_char("d3",6);
+    Music_Stream_add_note_char("e3",6);
+    Music_Stream_add_note_char("f#3",6);
+    Music_Stream_add_note_char("g#3",6);
+    Music_Stream_add_note_char("a4",26);
+    Music_Stream_add_note_char("a#4",26);
+    Music_Stream_add_note_char("b4",26);
+    Music_Stream_add_note_char("c5",128);
+}
+
+void p_jordan()
+{
+    for(;;)
+    {
+        Music_Stream_play();
+        Task_Next();
+    }
+}
+
+int r_main(void)
+{
+	power_cycle_radio();
+    setup_leds();
+    init_model(&model);
+    load_music_stream();
+
+	//Initialize radio.
+	Radio_Init();
+	IR_init();
+	Radio_Configure_Rx(RADIO_PIPE_0, ROOMBA_ADDRESSES[roomba_num], ENABLE);
+	Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
+
+    //Create the services
+	radio_receive_service = Service_Init();
+	ir_receive_service = Service_Init();
+
+    //Create the tasks
+    Task_Create_RR(rr_roomba_controller,0);
+    Task_Create_RR(rr_ir_controller,0);
+
+    // periodic tasks to control blinking the led + controlling a stunned zombie
+    // they will be flag gaurded such that they only run once they are allowed.
+    Task_Create_Periodic(p_blink_led ,0,10,3,250);
+    Task_Create_Periodic(p_jordan,0,4000,3000,251);
+
+
+	Task_Terminate();
+	return 0 ;
+}

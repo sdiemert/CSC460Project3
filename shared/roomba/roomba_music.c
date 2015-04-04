@@ -11,6 +11,7 @@ void Roomba_Music_add_note(roomba_music_song_t* song,uint8_t note, uint8_t durat
     song->len += 1;
 }
 
+#define ROOMBA_MUSIC_MULT 16 // 16 ms
 uint16_t Roomba_Music_get_duration_of_song(roomba_music_song_t* song)
 {
     uint16_t song_len = 0;
@@ -19,7 +20,8 @@ uint16_t Roomba_Music_get_duration_of_song(roomba_music_song_t* song)
         song_len += song->notes[i][1];
     }
     // return (song_len*64)/1000;
-    return ((song_len*100)/64)*10;
+    return song_len * ROOMBA_MUSIC_MULT;
+    // return ((song_len*100)/64)*10;
 }
 
 /*

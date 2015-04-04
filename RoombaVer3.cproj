@@ -139,6 +139,12 @@
     <Compile Include="shared\joystick\joystick.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="shared\music_stream.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\music_stream.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="shared\profiler.h">
       <SubType>compile</SubType>
     </Compile>
