@@ -45,12 +45,14 @@ void radio_rxhandler(uint8_t val){
     Service_Publish(rx_service, 1);
 }
 
-void sendPacket(uint8_t id, uint8_t x, uint8_t y, uint8_t b){
+void sendPacket(uint8_t id, uint8_t x, uint8_t y, uint8_t s_x, uint8_t s_y, uint8_t b){
     
     Radio_Set_Tx_Addr(ROOMBA_ADDRESSES[id]);
 
     game_packet.velocity_x = x;
     game_packet.velocity_y = y;
+    game_packet.servo_velocity_x = s_x;
+    game_packet.servo_velocity_y = s_y;
     game_packet.button = game_packet.button;
     game_packet.game_player_id = id;
     game_packet.game_team = (uint8_t)roombas[id].team;
@@ -67,6 +69,8 @@ void updateRoomba(){
     uint8_t current_roomba;
     uint8_t joystick_x = 0;
     uint8_t joystick_y = 0;    
+    uint8_t servo_joystick_x = 0;
+    uint8_t servo_joystick_y = 0;
     uint8_t button = 0;
     char output[20]; 
 
@@ -77,7 +81,9 @@ void updateRoomba(){
             PORTB |= 1 << 5; 
             
             joystick_x = read_analog(roombas[current_roomba].joystick_port);
-            joystick_y = read_analog(roombas[current_roomba].joystick_port+1);                      
+            joystick_y = read_analog(roombas[current_roomba].joystick_port+1);        
+            servo_joystick_x = read_analog(roombas[current_roomba].joystick_port + 2);
+            servo_joystick_y = read_analog(roombas[current_roomba].joystick_port + 3); 			
 
             //if(current_roomba==1){
             //   sprintf(output, "%d: (%d,%d)\n\r",current_roomba,joystick_x, joystick_y) ;
@@ -92,15 +98,15 @@ void updateRoomba(){
                     //don't need to stun anymore.
                     roombas[current_roomba].status = (uint8_t)NORMAL; 
                     roombas[current_roomba].stun_elapsed = 0;
-                    sendPacket(current_roomba, joystick_x, joystick_y, button);    
+                    sendPacket(current_roomba, joystick_x, joystick_y, servo_joystick_x, servo_joystick_y, button);    
                 }else{
                     //increment the stun
                     roombas[current_roomba].stun_elapsed += 1;
-                    sendPacket(current_roomba, 127, 127, 0);
+                    sendPacket(current_roomba, 127, 127, servo_joystick_x, servo_joystick_y, 0);
                 }
             }else{
                 //not stunned, just continue as is.
-                sendPacket(current_roomba, joystick_x, joystick_y, button);
+                sendPacket(current_roomba, joystick_x, joystick_y, servo_joystick_x, servo_joystick_y, button);
             }
 
 
