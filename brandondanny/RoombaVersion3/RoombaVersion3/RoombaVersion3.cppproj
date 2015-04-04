@@ -1,0 +1,255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>6.2</ProjectVersion>
+    <ToolchainName>com.Atmel.AVRGCC8.CPP</ToolchainName>
+    <ProjectGuid>{63770e99-9970-4722-b8e0-10c8e3eb2a4d}</ProjectGuid>
+    <avrdevice>ATmega2560</avrdevice>
+    <avrdeviceseries>none</avrdeviceseries>
+    <OutputType>Executable</OutputType>
+    <Language>CPP</Language>
+    <OutputFileName>$(MSBuildProjectName)</OutputFileName>
+    <OutputFileExtension>.elf</OutputFileExtension>
+    <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
+    <AssemblyName>RoombaVersion3</AssemblyName>
+    <Name>RoombaVersion3</Name>
+    <RootNamespace>RoombaVersion3</RootNamespace>
+    <ToolchainFlavour>Native</ToolchainFlavour>
+    <KeepTimersRunning>true</KeepTimersRunning>
+    <OverrideVtor>false</OverrideVtor>
+    <CacheFlash>true</CacheFlash>
+    <ProgFlashFromRam>true</ProgFlashFromRam>
+    <RamSnippetAddress />
+    <UncachedRange />
+    <preserveEEPROM>true</preserveEEPROM>
+    <OverrideVtorValue />
+    <BootSegment>2</BootSegment>
+    <eraseonlaunchrule>1</eraseonlaunchrule>
+    <AsfFrameworkConfig>
+      <framework-data xmlns="">
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.21.0" />
+        </dependencies>
+      </framework-data>
+    </AsfFrameworkConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <ToolchainSettings>
+      <AvrGccCpp>
+        <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
+        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+        <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcc.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>NDEBUG</Value>
+          </ListValues>
+        </avrgcc.compiler.symbols.DefSymbols>
+        <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
+        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+        <avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>
+        <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
+        <avrgcccpp.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>NDEBUG</Value>
+          </ListValues>
+        </avrgcccpp.compiler.symbols.DefSymbols>
+        <avrgcccpp.compiler.optimization.level>Optimize for size (-Os)</avrgcccpp.compiler.optimization.level>
+        <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
+        <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
+        <avrgcccpp.compiler.warnings.AllWarnings>True</avrgcccpp.compiler.warnings.AllWarnings>
+        <avrgcccpp.linker.libraries.Libraries>
+          <ListValues>
+            <Value>libm</Value>
+          </ListValues>
+        </avrgcccpp.linker.libraries.Libraries>
+      </AvrGccCpp>
+    </ToolchainSettings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <ToolchainSettings>
+      <AvrGccCpp>
+  <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
+  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+  <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+  <avrgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>DEBUG</Value>
+    </ListValues>
+  </avrgcc.compiler.symbols.DefSymbols>
+  <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
+  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+  <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+  <avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>
+  <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
+  <avrgcccpp.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>DEBUG</Value>
+      <Value>F_CPU=16000000UL</Value>
+    </ListValues>
+  </avrgcccpp.compiler.symbols.DefSymbols>
+  <avrgcccpp.compiler.optimization.level>Optimize (-O1)</avrgcccpp.compiler.optimization.level>
+  <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
+  <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
+  <avrgcccpp.compiler.optimization.DebugLevel>Default (-g2)</avrgcccpp.compiler.optimization.DebugLevel>
+  <avrgcccpp.compiler.warnings.AllWarnings>True</avrgcccpp.compiler.warnings.AllWarnings>
+  <avrgcccpp.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libm</Value>
+    </ListValues>
+  </avrgcccpp.linker.libraries.Libraries>
+  <avrgcccpp.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcccpp.assembler.debugging.DebugLevel>
+</AvrGccCpp>
+    </ToolchainSettings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="RoombaVersion3.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\game.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\game.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\ir\ir.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\ir\ir.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\joystick\joystick.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\joystick\joystick.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\music_stream.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\music_stream.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\profiler.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\radio\nRF24L01.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\radio\packet.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\radio\radio.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\radio\radio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\radio\sensor_struct.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\radio\spi.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\radio\spi.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\roomba\roomba.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\roomba\roomba.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\roomba\roomba_led_sci.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\roomba\roomba_led_sci.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\roomba\roomba_music.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\roomba\roomba_music.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\roomba\roomba_sci.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\roomba\sensor_struct.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\rtos_m\error_code.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\rtos_m\kernel.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\rtos_m\os.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\rtos_m\os.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\rtos_m\timer.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\rtos_m\timer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\trace\trace.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\trace\trace.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\trace_uart\trace_uart.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\trace_uart\trace_uart.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\uart\uart.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\uart\uart.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\usart.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="shared\usart.h">
+      <SubType>compile</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="shared" />
+    <Folder Include="shared\joystick" />
+    <Folder Include="shared\ir" />
+    <Folder Include="shared\rtos_m" />
+    <Folder Include="shared\radio" />
+    <Folder Include="shared\roomba" />
+    <Folder Include="shared\trace" />
+    <Folder Include="shared\trace_uart" />
+    <Folder Include="shared\uart" />
+  </ItemGroup>
+  <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
+</Project>

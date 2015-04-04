@@ -415,7 +415,7 @@ int r_main(void)
 	power_cycle_radio();
     setup_leds();
     init_model(&model);
-    load_music_stream();
+//     load_music_stream();
 
 	//Initialize radio.
 	Radio_Init();

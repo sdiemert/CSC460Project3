@@ -27,6 +27,10 @@ typedef struct _game_t{
     // roomba command
     uint8_t velocity_x;
     uint8_t velocity_y;
+	
+	uint8_t servo_velocity_x;
+	uint8_t servo_velocity_y;
+	
     uint8_t button;
 
     //roomba state
