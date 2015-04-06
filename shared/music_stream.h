@@ -1,6 +1,8 @@
 #ifndef MUSIC_STREAM_H
 #define MUSIC_STREAM_H
 
+#include <avr/io.h>
+
 #define MUSIC_STREAM_LEN 128
 typedef struct _music_stream_song_t{
     uint8_t len;

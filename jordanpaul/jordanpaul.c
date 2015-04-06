@@ -9,9 +9,7 @@
 #include "game.h"
 #include "profiler.h"
 #include "trace_uart/trace_uart.h"
-// #include "sonar/sonar.h"
-// #include "roomba/roomba_music.h"
-#include "music_stream.h"
+#include "music_files.h"
 
 #define LED_PORT      PORTB
 #define LED_DDR       DDRB
@@ -43,11 +41,10 @@ typedef struct _model_t {
     uint8_t old_team; // previous team from last packet recv
     uint8_t old_state; // previous team from last packet recv
 
-    int16_t old_vx;
-    int16_t old_vy;
-    int16_t old_button;
     int16_t vx;
     int16_t vy;
+    int16_t vx2;
+    int16_t vy2;
     uint8_t button;
 
     // function pointers to how we want to handle stuff
@@ -71,6 +68,8 @@ void ir_rxhandler() {
         Service_Publish(ir_receive_service,value);
     }
 }
+
+void Sonar_rxhandler(int16_t distance){}
 // ----------------
 // END rxhandler functions
 // ----------------
@@ -123,7 +122,6 @@ void handleStateInput(pf_game_t* game){
         // we have changed teams
         if(model.team == ZOMBIE){
             // We went from human to zombie
-
             // want to do anything special?
         }else{
             // we went from zombie to human. SHOULD NOT HAPPEN
@@ -166,10 +164,8 @@ void handleStateInput(pf_game_t* game){
         // set the red led
         if( model.state == NORMAL){
             // solid red
-
         }else{
             // blinking red
-
         }
     }
 }
@@ -188,7 +184,6 @@ void send_back_packet()
 
     // We send this info back in order to inform the Roomba
     // of what state we think we are in.
-    // tx_packet.payload.game.game_player_id = model.player_id;
     tx_packet.payload.game.game_player_id = PLAYER_IDS[roomba_num];
     tx_packet.payload.game.game_team = model.team;
     tx_packet.payload.game.game_state = model.state;
@@ -210,12 +205,6 @@ void rr_roomba_controller() {
 	Roomba_Init();
     Radio_Set_Tx_Addr(base_station_address);
 
-    Roomba_led_debris(1);
-    Roomba_led_spot(1);
-    Roomba_led_warn(1);
-    Roomba_led_dock(1);
-    Roomba_led_main_led(255,255);
-
 	int16_t value;
     RADIO_RX_STATUS result;
     radiopacket_t packet;
@@ -224,7 +213,6 @@ void rr_roomba_controller() {
 		Service_Subscribe(radio_receive_service,&value);
 
 		do {
-
 			result = Radio_Receive(&packet);
 
 			if(result == RADIO_RX_SUCCESS || result == RADIO_RX_MORE_PACKETS) {
@@ -238,7 +226,6 @@ void rr_roomba_controller() {
 
 		} while (result == RADIO_RX_MORE_PACKETS);
 
-        // POTENTIAL STRAT, don' send packet back until as late as possible
 		send_back_packet();
 	}
 }
@@ -259,7 +246,6 @@ void p_blink_led()
 {
     for(;;)
     {
-
         //LED_PORT ^= ( 1<< LED_RX_PIN);
         if( model.team == ZOMBIE){
             if( model.state == NORMAL){
@@ -315,90 +301,9 @@ void init_model(Model_t* model)
     model->last_ir_code= 0;
     model->old_team = 0;
     model->old_state = 0;
-    model->old_vx = 0;
-    model->old_vy = 0;
-    model->old_button = 0;
     model->vx = 0;
     model->vy = 0;
     model->button = 0;
-}
-
-void Sonar_rxhandler(int16_t distance){
-}
-
-void load_music_stream(){
-    // eponas song.
-    // Music_Stream_init();
-    // Music_Stream_add_note(65, 16);
-    // Music_Stream_add_note(69, 16);
-    // Music_Stream_add_note(71, 24);
-    // Music_Stream_add_note(65, 16);
-    // Music_Stream_add_note(69, 16);
-    // Music_Stream_add_note(71, 24);
-    // Music_Stream_add_note(65, 16);
-    // Music_Stream_add_note(69, 16);
-    // Music_Stream_add_note(71, 16);
-    // Music_Stream_add_note(76, 16);
-    // Music_Stream_add_note(74, 24);
-    // Music_Stream_add_note(71, 16);
-    // Music_Stream_add_note(72, 16);
-    // Music_Stream_add_note(71, 16);
-    // Music_Stream_add_note(67, 16);
-    // Music_Stream_add_note(64, 36);
-
-    Music_Stream_init();
-    Music_Stream_add_note_char("g2",24);
-    Music_Stream_add_note_char("a2",24);
-    Music_Stream_add_note_char("b2",24);
-    Music_Stream_add_note_char("c#3",24);
-    Music_Stream_add_note_char("g2",24);
-    Music_Stream_add_note_char("a2",24);
-    Music_Stream_add_note_char("b2",24);
-    Music_Stream_add_note_char("c#3",24);
-    Music_Stream_add_note_char("g#2",22);
-    Music_Stream_add_note_char("a#2",22);
-    Music_Stream_add_note_char("c3",22);
-    Music_Stream_add_note_char("d3",22);
-    Music_Stream_add_note_char("g#2",22);
-    Music_Stream_add_note_char("a#2",22);
-    Music_Stream_add_note_char("c3",22);
-    Music_Stream_add_note_char("d3",22);
-    Music_Stream_add_note_char("a2",18);
-    Music_Stream_add_note_char("b2",18);
-    Music_Stream_add_note_char("c#3",18);
-    Music_Stream_add_note_char("d#3",18);
-    Music_Stream_add_note_char("a2",18);
-    Music_Stream_add_note_char("b2",18);
-    Music_Stream_add_note_char("c#3",18);
-    Music_Stream_add_note_char("d#3",18);
-    Music_Stream_add_note_char("a#2",14);
-    Music_Stream_add_note_char("c3",14);
-    Music_Stream_add_note_char("d3",14);
-    Music_Stream_add_note_char("e3",14);
-    Music_Stream_add_note_char("a#2",14);
-    Music_Stream_add_note_char("c3",14);
-    Music_Stream_add_note_char("d3",14);
-    Music_Stream_add_note_char("e3",14);
-    Music_Stream_add_note_char("b2",12);
-    Music_Stream_add_note_char("c#3",12);
-    Music_Stream_add_note_char("d#3",12);
-    Music_Stream_add_note_char("f3",12);
-    Music_Stream_add_note_char("c3",10);
-    Music_Stream_add_note_char("d3",10);
-    Music_Stream_add_note_char("e3",10);
-    Music_Stream_add_note_char("f#3",10);
-    Music_Stream_add_note_char("c#3",8);
-    Music_Stream_add_note_char("d#3",8);
-    Music_Stream_add_note_char("f3",8);
-    Music_Stream_add_note_char("g3",8);
-    Music_Stream_add_note_char("d3",6);
-    Music_Stream_add_note_char("e3",6);
-    Music_Stream_add_note_char("f#3",6);
-    Music_Stream_add_note_char("g#3",6);
-    Music_Stream_add_note_char("a4",26);
-    Music_Stream_add_note_char("a#4",26);
-    Music_Stream_add_note_char("b4",26);
-    Music_Stream_add_note_char("c5",128);
 }
 
 void p_jordan()
@@ -415,7 +320,7 @@ int r_main(void)
 	power_cycle_radio();
     setup_leds();
     init_model(&model);
-//     load_music_stream();
+    music_files_load(MUSIC_FILES_ZELDA_TREASURE);
 
 	//Initialize radio.
 	Radio_Init();
@@ -435,7 +340,6 @@ int r_main(void)
     // they will be flag gaurded such that they only run once they are allowed.
     Task_Create_Periodic(p_blink_led ,0,10,3,250);
     Task_Create_Periodic(p_jordan,0,4000,3000,251);
-
 
 	Task_Terminate();
 	return 0 ;
