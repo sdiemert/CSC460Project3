@@ -9,7 +9,9 @@
 #include "game.h"
 #include "profiler.h"
 #include "trace_uart/trace_uart.h"
+#include "music_stream.h"
 #include "music_files.h"
+
 
 #define LED_PORT      PORTB
 #define LED_DDR       DDRB
@@ -43,8 +45,6 @@ typedef struct _model_t {
 
     int16_t vx;
     int16_t vy;
-    int16_t vx2;
-    int16_t vy2;
     uint8_t button;
 
     // function pointers to how we want to handle stuff
@@ -101,15 +101,15 @@ void handleRoombaInput(pf_game_t* game)
     }
 
     // fire every 5th packet
-    ir_count+= 1;
-    if(ir_count == 5){
-        IR_transmit(PLAYER_IDS[roomba_num]);
-        ir_count = 0;
-    }
-
-    // if( game->button ){
+    // ir_count+= 1;
+    // if(ir_count == 5){
     //     IR_transmit(PLAYER_IDS[roomba_num]);
+    //     ir_count = 0;
     // }
+
+    if( game->button ){
+        IR_transmit(PLAYER_IDS[roomba_num]);
+    }
 }
 
 void handleStateInput(pf_game_t* game){
@@ -306,8 +306,9 @@ void init_model(Model_t* model)
     model->button = 0;
 }
 
-void p_jordan()
+void p_play_music()
 {
+    Task_Next();
     for(;;)
     {
         Music_Stream_play();
@@ -339,7 +340,7 @@ int r_main(void)
     // periodic tasks to control blinking the led + controlling a stunned zombie
     // they will be flag gaurded such that they only run once they are allowed.
     Task_Create_Periodic(p_blink_led ,0,10,3,250);
-    Task_Create_Periodic(p_jordan,0,4000,3000,251);
+    Task_Create_Periodic(p_play_music,0,8000,3000,251);
 
 	Task_Terminate();
 	return 0 ;
