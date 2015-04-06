@@ -43,46 +43,6 @@ uint16_t _load_music(music_stream_t* stream)
 }
 
 
-void _play_music2()
-{
-    uint16_t duration;
-    for(;;){
-
-        // poll the roomba to see if the last song has finished playing
-        if(Roomba_Music_is_song_playing() == 0){
-
-            if( music_stream.current_note < music_stream.len){
-
-                // If we have more notes to play, then load them into the roomba
-                duration = _load_music(&music_stream);
-
-                if( duration > 15){
-                    // don't bother if we only have to wait 15ms
-                    duration -= 15;
-
-                    uint16_t target_time = Now() + duration;
-                    while( Now() - target_time < duration){
-                        Task_Next();
-                    }
-                    duration = 0;
-                }
-
-            }else{
-                // Reset the music stream. We are done now.
-                music_stream.current_note = 0;
-                music_stream.is_playing = 0;
-                PORTC ^= ( 1 << PC5);
-                Task_Terminate();
-            }
-        }
-
-
-        Task_Next();
-    }
-}
-
-
-
 void _play_music()
 {
     uint16_t duration;

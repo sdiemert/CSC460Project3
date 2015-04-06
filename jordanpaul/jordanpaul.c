@@ -9,8 +9,9 @@
 #include "game.h"
 #include "profiler.h"
 #include "trace_uart/trace_uart.h"
-#include "music_stream.h"
-#include "music_files.h"
+#include "roomba/roomba_music.h"
+// #include "music_stream.h"
+// #include "music_files.h"
 
 
 #define LED_PORT      PORTB
@@ -27,9 +28,10 @@
 
 SERVICE* radio_receive_service;
 SERVICE* ir_receive_service;
+roomba_music_song_t epona_song;
 
 // everyone hard-codes this number when they begin the game
-uint8_t roomba_num = 0;
+uint8_t roomba_num = 3;
 uint8_t ir_count = 0;
 radiopacket_t tx_packet;
 
@@ -101,15 +103,15 @@ void handleRoombaInput(pf_game_t* game)
     }
 
     // fire every 5th packet
-    // ir_count+= 1;
-    // if(ir_count == 5){
-    //     IR_transmit(PLAYER_IDS[roomba_num]);
-    //     ir_count = 0;
-    // }
-
-    if( game->button ){
+    ir_count+= 1;
+    if(ir_count == 5){
         IR_transmit(PLAYER_IDS[roomba_num]);
+        ir_count = 0;
     }
+
+    // if( game->button ){
+    //     IR_transmit(PLAYER_IDS[roomba_num]);
+    // }
 }
 
 void handleStateInput(pf_game_t* game){
@@ -306,12 +308,51 @@ void init_model(Model_t* model)
     model->button = 0;
 }
 
+// void p_play_music()
+// {
+//     Task_Next();
+//     for(;;)
+//     {
+//         Music_Stream_play();
+//         Task_Next();
+//     }
+// }
+
+void p_watch_dog(){
+	Task_Next();
+    for(;;){
+        Roomba_Drive(250,1);
+        Task_Next();
+    }
+}
+
+void load_epona()
+{
+    epona_song.len = 0;
+    epona_song.song_num = 0;
+
+    Roomba_Music_add_note(&epona_song,65, 16);
+    Roomba_Music_add_note(&epona_song,69, 16);
+    Roomba_Music_add_note(&epona_song,71, 24);
+    Roomba_Music_add_note(&epona_song,65, 16);
+    Roomba_Music_add_note(&epona_song,69, 16);
+    Roomba_Music_add_note(&epona_song,71, 24);
+    Roomba_Music_add_note(&epona_song,65, 16);
+    Roomba_Music_add_note(&epona_song,69, 16);
+    Roomba_Music_add_note(&epona_song,71, 16);
+    Roomba_Music_add_note(&epona_song,76, 16);
+    Roomba_Music_add_note(&epona_song,74, 24);
+    Roomba_Music_add_note(&epona_song,71, 16);
+    Roomba_Music_add_note(&epona_song,72, 16);
+    Roomba_Music_add_note(&epona_song,71, 16);
+    Roomba_Music_add_note(&epona_song,67, 16);
+    Roomba_Music_add_note(&epona_song,64, 36);
+    Roomba_Music_load_song(&epona_song);
+}
 void p_play_music()
 {
-    Task_Next();
-    for(;;)
-    {
-        Music_Stream_play();
+    for(;;){
+        Roomba_Music_play_song(0);
         Task_Next();
     }
 }
@@ -321,7 +362,9 @@ int r_main(void)
 	power_cycle_radio();
     setup_leds();
     init_model(&model);
-    music_files_load(MUSIC_FILES_ZELDA_TREASURE);
+    //music_files_load(MUSIC_FILES_ZELDA_TREASURE);
+    load_epona();
+
 
 	//Initialize radio.
 	Radio_Init();
@@ -340,7 +383,8 @@ int r_main(void)
     // periodic tasks to control blinking the led + controlling a stunned zombie
     // they will be flag gaurded such that they only run once they are allowed.
     Task_Create_Periodic(p_blink_led ,0,10,3,250);
-    Task_Create_Periodic(p_play_music,0,8000,3000,251);
+    Task_Create_Periodic(p_watch_dog,0,10000,3000,251);
+    Task_Create_Periodic(p_play_music,0,8000,3000,252);
 
 	Task_Terminate();
 	return 0 ;
